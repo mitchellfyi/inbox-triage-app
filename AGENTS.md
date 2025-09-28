@@ -46,6 +46,36 @@ This guide is for AI coding agents and human contributors working on the **Inbox
 - Mark completed tasks in TODO.md
 - Add new tasks if your work creates them
 
+## Best practices for quality contributions
+
+### Commit early and often
+- **Small, focused commits**: Make frequent commits with single, clear purposes
+- **Descriptive messages**: Follow the [commit message pattern](#commit-message-pattern) consistently
+- **Logical progression**: Each commit should represent a complete, working increment
+- **Before major changes**: Commit your current working state before attempting large refactors
+
+### Write comprehensive tests
+- **Test-driven approach**: Write tests for new functionality before or alongside implementation
+- **Unit test coverage**: Ensure critical business logic has unit tests with meaningful assertions
+- **Integration tests**: Test component interactions and API integrations where applicable  
+- **No workarounds**: Tests must pass cleanly without setTimeout hacks, mocks that don't reflect reality, or skipped test cases
+- **Run tests frequently**: Execute `npm run test:run` and `npm run lint` before each commit
+- **Edge case coverage**: Test error conditions, boundary values, and unexpected inputs
+
+### Follow best practices for maintainability
+- **Code readability**: Write self-documenting code with clear variable and function names
+- **TypeScript usage**: Leverage type safety comprehensively, avoid `any` types
+- **Accessibility compliance**: Ensure WCAG 2.1 AA standards in all UI components
+- **Performance considerations**: Avoid blocking the main thread, use async patterns appropriately
+- **Error handling**: Implement graceful fallbacks with user-friendly error messages
+
+### Update documentation after feature completion
+- **README.md updates**: Reflect new features in the feature list and quickstart instructions
+- **AGENTS.md updates**: Document new coding patterns, gotchas, or architectural decisions
+- **TODO.md maintenance**: Mark completed tasks as `[x]` and add new tasks discovered during development
+- **API documentation**: Update function signatures, add JSDoc comments for public interfaces
+- **User-facing changes**: Ensure British English spelling and clear explanations
+
 ## Development principles
 
 - **On‑device first, hybrid when needed.** Use Chrome’s built‑in AI Task APIs (Summarizer, Prompt, Multimodal) for all AI processing. Only fall back to a server function when local models are unavailable or context is too large. Never send raw attachments or sensitive data off the device without explicit user consent.

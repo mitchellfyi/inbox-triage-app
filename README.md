@@ -92,10 +92,11 @@ See [SPEC.md](SPEC.md) for complete privacy and security details.
 1. **Read the docs first**: [SPEC.md](SPEC.md) → [AGENTS.md](AGENTS.md) → [TODO.md](TODO.md)
 2. **Find or create a task**: Check [TODO.md](TODO.md) for open items or GitHub issues
 3. **Assign and branch**: Claim a task, create a feature branch
-4. **Develop**: Follow [AGENTS.md](AGENTS.md) coding rules and workflow
-5. **Test and lint**: Run `npm test`, `npm run lint` before submitting
-6. **Pull request**: Reference issue, describe changes, ensure CI passes
-7. **Update docs**: Keep [TODO.md](TODO.md) status current after merging
+4. **Develop with quality**: Follow [AGENTS.md](AGENTS.md) coding rules, commit early and often with clear messages
+5. **Write comprehensive tests**: Add unit tests for new functionality, ensure all tests pass without workarounds
+6. **Test and lint frequently**: Run `npm run test:run`, `npm run lint` before each commit and before submitting
+7. **Pull request**: Reference issue, describe changes, ensure CI passes
+8. **Update documentation**: After merging, update README.md, AGENTS.md, and TODO.md to reflect current functionality
 
 ### Development rules
 - **On-device first**: Use Chrome AI APIs; only fallback to server when needed
@@ -103,7 +104,9 @@ See [SPEC.md](SPEC.md) for complete privacy and security details.
 - **No external dependencies**: Avoid unnecessary packages
 - **Accessibility**: WCAG 2.1 AA compliance
 - **Type safety**: Comprehensive TypeScript usage
-- **Test coverage**: Unit tests for critical functionality
+- **Test coverage**: Comprehensive unit tests for critical functionality, all tests must pass cleanly
+- **Commit quality**: Frequent, small commits with clear conventional commit messages
+- **Documentation maintenance**: Update docs after completing features to reflect current state
 
 ## Available Scripts
 

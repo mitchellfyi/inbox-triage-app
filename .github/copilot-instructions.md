@@ -45,9 +45,12 @@ Before making any changes, **read these documents in order**:
 ### Development Workflow
 1. **Read the specs**: Understand requirements and constraints fully
 2. **Small changes**: Make minimal, surgical modifications
-3. **Test early**: Run `npm run lint`, `npm run test:run` frequently
-4. **Follow patterns**: Match existing code style and structure
-5. **British spelling**: Use "summarise", "colour", "behaviour", etc.
+3. **Commit frequently**: Make small, focused commits with clear messages following the pattern `type(scope): summary`
+4. **Test comprehensively**: Write unit tests for new features, ensure all tests pass cleanly without workarounds
+5. **Test early**: Run `npm run lint`, `npm run test:run` frequently and before each commit
+6. **Follow patterns**: Match existing code style and structure
+7. **British spelling**: Use "summarise", "colour", "behaviour", etc.
+8. **Update docs**: After completing features, update README.md, AGENTS.md, and TODO.md to reflect current state
 
 ### Directory Structure
 - **Components**: `src/components/` with PascalCase naming
@@ -122,5 +125,26 @@ import * as XLSX from 'xlsx';
 - Test error conditions and edge cases
 - Verify accessibility with keyboard navigation
 - Test with Chrome AI models available and unavailable
+
+## Development Best Practices
+
+### Commit Frequency and Quality
+- **Commit early and often**: Make small, focused commits that represent logical units of work
+- **Clear commit messages**: Use the conventional commit format: `type(scope): summary`
+- **Working increments**: Each commit should leave the codebase in a functional state
+- **Before major changes**: Always commit current progress before attempting large refactors
+
+### Testing Standards
+- **Write tests first**: Follow test-driven development where possible
+- **Comprehensive coverage**: Ensure unit tests cover critical business logic and edge cases
+- **Clean test passes**: Tests must pass without workarounds like arbitrary timeouts or overly broad mocks
+- **Integration testing**: Test component interactions and API flows
+- **Accessibility testing**: Verify keyboard navigation and screen reader compatibility
+
+### Documentation Maintenance
+- **Update after completion**: Once a feature is complete, update README.md, AGENTS.md, and TODO.md
+- **Reflect current state**: Documentation should accurately represent the current functionality
+- **Task management**: Mark completed TODO.md items as `[x]` and add new tasks discovered during development
+- **API documentation**: Add JSDoc comments for public interfaces and complex functions
 
 Remember: This project demonstrates privacy-preserving AI workflows. Every decision should prioritise user privacy and on-device processing while maintaining excellent user experience.

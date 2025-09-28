@@ -8,8 +8,9 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 1. **Pick a task** – Choose an item marked `[ ]` (to do) or `[~]` (help wanted)  
 2. **Create a branch** – Use pattern `feature/task-name` or `fix/issue-name`
 3. **Mark in progress** – Change `[ ]` to `[~]` and add your name as owner
-4. **Work and PR** – Follow the workflow in [AGENTS.md](AGENTS.md)
+4. **Work and PR** – Follow the workflow in [AGENTS.md](AGENTS.md), commit early and often, write comprehensive tests
 5. **Update status** – Mark `[x]` when merged, link to PR number
+6. **Update docs** – After feature completion, update README.md, AGENTS.md, and TODO.md to reflect current functionality
 
 **For project maintainers:**
 - Add new tasks as `[ ]` with clear acceptance criteria
@@ -32,6 +33,11 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 - [x] **Restructure TODO.md** – Project-wide checklist with sections and usage guidance. (PR: #??)
 - [ ] **Add GitHub templates** – PR template and issue templates for feature/bug reports. (Issue: #??)
 - [ ] **Verify documentation links** – Ensure all inter-document links are relative and working. (Issue: #??)
+- [ ] **Update documentation after Chrome AI integration** – Once AI Task APIs are integrated, update README.md features list and AGENTS.md patterns. (Issue: #??)
+- [ ] **Update documentation after Gmail OAuth** – Document OAuth flow, update README.md features, add security considerations to AGENTS.md. (Issue: #??)
+- [ ] **Update documentation after attachment parsing** – Document supported file types, update README.md, add parsing patterns to AGENTS.md. (Issue: #??)
+- [ ] **Update documentation after UI components** – Document component usage, accessibility features, update AGENTS.md UI patterns. (Issue: #??)
+- [ ] **Regular documentation review** – Quarterly review to ensure all docs reflect current functionality and remove outdated information. (Issue: #??)
 
 ## Extension Core
 
