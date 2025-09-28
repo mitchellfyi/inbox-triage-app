@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import EmailThreadInput from '../components/EmailThreadInput';
 import ThreadSummary from '../components/ThreadSummary';
+import ReplyDrafts from '../components/ReplyDrafts';
 import { 
   getTlDr, 
   getKeyPoints, 
@@ -14,6 +15,7 @@ import {
 export default function Home() {
   const [tldr, setTldr] = useState<string>();
   const [keyPoints, setKeyPoints] = useState<string[]>();
+  const [threadContent, setThreadContent] = useState<string>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>();
   const [availability, setAvailability] = useState<SummariserAvailability>();
@@ -35,6 +37,9 @@ export default function Home() {
   }, []);
 
   const handleTextSubmit = useCallback(async (text: string) => {
+    // Store the thread content for draft generation
+    setThreadContent(text);
+    
     // Clear previous results and errors
     setTldr(undefined);
     setKeyPoints(undefined);
@@ -69,6 +74,8 @@ export default function Home() {
     }
   }, []);
 
+  const hasSummary = Boolean(tldr || (keyPoints && keyPoints.length > 0));
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="py-8 px-4">
@@ -99,6 +106,13 @@ export default function Home() {
             error={error}
             availability={availability}
             isDownloading={isDownloading}
+          />
+
+          {/* Reply Drafts */}
+          <ReplyDrafts
+            threadContent={threadContent}
+            isLoading={isLoading}
+            hasSummary={hasSummary}
           />
         </main>
       </div>
