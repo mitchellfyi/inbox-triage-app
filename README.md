@@ -26,25 +26,44 @@ This repo contains several important documents to guide development:
 
 ## Getting started
 
-To run the app locally:
+### Web Application
 
-1. Clone the repository and install dependencies:
+To run the web app locally:
+
+1. Clone the repository and navigate to the web app:
 
     ```bash
     git clone https://github.com/mitchellfyi/inbox-triage-app.git
-    cd inbox-triage-app
+    cd inbox-triage-app/web-app
+    ```
+
+2. Install dependencies:
+
+    ```bash
     npm install
     ```
 
-2. Start the development server:
+3. Start the development server:
 
     ```bash
     npm run dev
     ```
 
-3. Open `http://localhost:3000` in your browser.
+4. Open `http://localhost:5173` in your browser.
 
-The app is built with React and Vite, and uses no external servers by default. To enable Gmail/Outlook import or hybrid fallback, follow the instructions in the spec.
+### Available Scripts
+
+In the `web-app` directory, you can run:
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+
+The web app is built with React, TypeScript, and Vite. It uses no external servers by default. To enable Gmail/Outlook import or hybrid fallback, follow the instructions in the spec.
 
 ## Contributing
 
