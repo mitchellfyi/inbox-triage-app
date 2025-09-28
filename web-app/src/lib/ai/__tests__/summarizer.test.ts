@@ -59,6 +59,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not present', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).ai = undefined;
     
     const result = await checkSummariserAvailability();
@@ -66,6 +67,7 @@ describe('checkSummariserAvailability', () => {
     expect(result).toBe(SummariserAvailability.UNAVAILABLE);
     
     // Restore for other tests
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).ai = mockAI;
   });
 
@@ -126,9 +128,10 @@ describe('getTlDr', () => {
     try {
       await getTlDr('test text');
       fail('Should have thrown');
-    } catch (error: any) {
-      expect(error.userMessage).toContain('too long to summarise locally');
-      expect(error.code).toBe('TOKEN_LIMIT');
+    } catch (error: unknown) {
+      const err = error as { userMessage: string; code: string };
+      expect(err.userMessage).toContain('too long to summarise locally');
+      expect(err.code).toBe('TOKEN_LIMIT');
     }
   });
 
@@ -138,9 +141,10 @@ describe('getTlDr', () => {
     try {
       await getTlDr('test text');
       fail('Should have thrown');
-    } catch (error: any) {
-      expect(error.userMessage).toContain('Network error');
-      expect(error.code).toBe('NETWORK_ERROR');
+    } catch (error: unknown) {
+      const err = error as { userMessage: string; code: string };
+      expect(err.userMessage).toContain('Network error');
+      expect(err.code).toBe('NETWORK_ERROR');
     }
   });
 
