@@ -1,6 +1,6 @@
-# Inbox Triage App - Next.js Version
+# Inbox Triage App
 
-This is the Next.js implementation of the Inbox Triage App, a web-based email triage companion that helps you summarise email threads, understand attachments and generate reply drafts using Chrome's built-in AI.
+This is a web-based email triage companion that helps you summarise email threads, understand attachments and generate reply drafts using Chrome's built-in AI.
 
 ## Architecture
 
@@ -112,17 +112,6 @@ src/
 ├── components/             # Reusable components
 └── test/                   # Test utilities
 ```
-
-## Migration from Vite
-
-This Next.js version provides the same functionality as the original Vite version with these improvements:
-
-- Server-side rendering (SSR) capabilities
-- Built-in API routes for backend functionality
-- File-based routing system
-- Better performance and SEO
-- Integrated build optimization
-- Full-stack development in single project
 
 ## Contributing
 

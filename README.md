@@ -49,21 +49,21 @@ To run the web app locally:
     npm run dev
     ```
 
-4. Open `http://localhost:5173` in your browser.
+4. Open `http://localhost:3000` in your browser.
 
 ### Available Scripts
 
 In the `web-app` directory, you can run:
 
 - `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run build` - Build for production  
+- `npm run start` - Start production server
 - `npm run test` - Run tests in watch mode
 - `npm run test:run` - Run tests once
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
 
-The web app is built with React, TypeScript, and Vite. It uses no external servers by default. To enable Gmail/Outlook import or hybrid fallback, follow the instructions in the spec.
+The web app is built with Next.js, React, and TypeScript. It uses no external servers by default. To enable Gmail/Outlook import or hybrid fallback, follow the instructions in the spec.
 
 ## Contributing
 

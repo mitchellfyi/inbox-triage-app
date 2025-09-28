@@ -9,7 +9,7 @@ This document tracks tasks for developing the **Inbox Triage App**. Each task sh
 
 ## Project setup
 
-- [x] **Scaffold web app project structure** – Create `/web-app` folder with React + Vite + TypeScript; set up basic routing and CI/CD for deployment. (Issue: #??)
+- [x] **Scaffold web app project structure** – Create `/web-app` folder with React + Next.js + TypeScript; set up basic routing and CI/CD for deployment. (Issue: #??)
 - [x] **Add ESLint, Prettier and unit test framework** – Ensure code quality and consistency across contributions. (Issue: #??)
 
 ## Core features
