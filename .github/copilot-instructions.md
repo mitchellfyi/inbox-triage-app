@@ -1,64 +1,126 @@
-# GitHub Copilot Instructions for Inbox Triage App
+# Copilot Instructions for Inbox Triage App
 
-**Always read [SPEC.md](../SPEC.md) and [AGENTS.md](../AGENTS.md) first.**
+## Project Overview
 
-## When contributing
+The **Inbox Triage App** is a privacy-first web application that helps users summarise email threads, understand attachments, and generate reply drafts using Chrome's built-in AI APIs. It operates primarily on-device with optional hybrid fallback mode.
 
-Before suggesting or implementing code:
+## Key Documentation
 
-- **Read [SPEC.md](../SPEC.md) and [AGENTS.md](../AGENTS.md) first** – Understand privacy-first, on-device constraints and development principles
-- **Never add network calls** or external AI services in default mode – use Chrome's built-in AI Task APIs only
-- **Never add new dependencies** without explicit justification – prefer existing client-side libraries
-- **Keep [TODO.md](../TODO.md) updated** after each change – mark completed tasks, add new ones as needed
-- **Follow the agent loop** – read → plan → small PRs → tests → docs update
-- **Use British English** for all user-facing text and documentation
+Before making any changes, **read these documents in order**:
 
-## Resources
+1. **[SPEC.md](../SPEC.md)** – Complete functional and technical requirements, constraints, and acceptance criteria
+2. **[README.md](../README.md)** – Project overview, architecture, quickstart, and contributing flow  
+3. **[AGENTS.md](../AGENTS.md)** – Development guide with coding rules, workflow, and common gotchas
+4. **[TODO.md](../TODO.md)** – Current tasks, status tracking, and available work items
 
-Essential project documentation (read in order):
+## Development Principles
 
-- **[../SPEC.md](../SPEC.md)** – Complete functional and technical requirements, constraints, acceptance criteria
-- **[../AGENTS.md](../AGENTS.md)** – Development guide, coding rules, workflow, patterns to follow  
-- **[../README.md](../README.md)** – Project overview, architecture, quickstart, contributing flow
-- **[../TODO.md](../TODO.md)** – Current task list, status tracking, and next priorities
+### Privacy-First Architecture
+- **On-device default**: All AI processing uses Chrome's built-in Task APIs (Summarizer, Prompt, Multimodal)
+- **Explicit consent**: Server-side hybrid processing requires clear user opt-in
+- **Data minimisation**: Only derived text (never raw attachments/emails) sent to servers
+- **User control**: Complete preference management with data deletion capabilities
 
-## Guardrails
+### Technical Stack
+- **Frontend**: Next.js 15+ with React 19+ and TypeScript
+- **AI Processing**: Chrome AI Task APIs with availability checks
+- **File Parsing**: Client-side libraries (PDF.js, mammoth.js, SheetJS)
+- **Styling**: Tailwind CSS with accessibility focus
+- **Testing**: Jest and React Testing Library
 
-### Privacy and security
-- **Default on-device processing**: All AI tasks use Chrome's Summarizer, Prompt, and Multimodal APIs  
-- **No data leakage**: Email content, attachments, and user data stay on device by default
-- **Hybrid fallback only**: Server processing requires explicit user consent and sends minimal derived text only
-- **Client-side parsing**: Use PDF.js, mammoth.js, SheetJS – never upload files to server
-- **No secrets**: Never commit API keys, tokens, or credentials
+### Code Quality Standards
+- **British English**: All user-facing text
+- **Type safety**: Comprehensive TypeScript usage
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Error handling**: Graceful fallbacks with user-friendly messages
+- **Performance**: Async processing, loading states, no blocking
 
-### Accessibility and performance  
-- **WCAG 2.1 AA compliance**: Proper ARIA labels, keyboard navigation, high contrast
-- **Responsive design**: Support mobile, tablet, and desktop screen sizes
-- **No blocking**: Use web workers or async functions for heavy processing
-- **Loading states**: Provide clear feedback during AI processing and file parsing
-- **Error handling**: Graceful degradation with actionable user messages
+## When Contributing
 
-### Code quality
-- **TypeScript strict mode**: Comprehensive type safety with proper error handling
-- **Test coverage**: Unit tests for critical functionality, especially AI API integration
-- **Consistent patterns**: Follow existing code structure and naming conventions
-- **Minimal changes**: Surgical, precise modifications – don't break existing functionality
-- **Documentation**: Update README.md, SPEC.md, or AGENTS.md when introducing new features
+### Before Starting
+- Choose a task from [TODO.md](../TODO.md) or create a GitHub issue
+- Understand the acceptance criteria and privacy constraints
+- Ensure you can run the development environment (`cd web-app && npm run dev`)
 
-## Supported mail providers and browsers
+### Development Workflow
+1. **Read the specs**: Understand requirements and constraints fully
+2. **Small changes**: Make minimal, surgical modifications
+3. **Test early**: Run `npm run lint`, `npm run test:run` frequently
+4. **Follow patterns**: Match existing code style and structure
+5. **British spelling**: Use "summarise", "colour", "behaviour", etc.
 
-**Primary target**: Chrome browser with built-in AI Task APIs enabled
+### Directory Structure
+- **Components**: `src/components/` with PascalCase naming
+- **Business logic**: `src/lib/` modules (e.g., `src/lib/ai/summarizer.ts`)
+- **API routes**: `src/app/api/` with kebab-case
+- **Types**: `src/types/` or co-located with components
 
-**Email integration**: Gmail and Outlook via OAuth with minimal read-only scopes
+### Error Handling
+- Always check AI model availability before use
+- Wrap AI calls in try/catch blocks
+- Show helpful error messages to users
+- Log detailed errors only in development
 
-**File parsing**: Client-side support for PDF, DOCX, XLSX, CSV, PNG, JPG
+### Security & Privacy
+- Never store email content beyond functional requirements
+- Implement proper OAuth flows with minimal scopes
+- Validate webhook signatures
+- Clear consent flows for hybrid mode
 
-## Architecture reminders
+## Common Patterns
 
-- **Frontend**: Next.js 15 + React + TypeScript with App Router
-- **AI Processing**: Chrome's built-in Task APIs (check availability first)
-- **State management**: localStorage for on-device preferences  
-- **File uploads**: Drag-and-drop with client-side parsing
-- **API routes**: Minimal server endpoints for OAuth and hybrid fallback only
+### AI Integration
+```typescript
+// Check availability first
+const available = await ai.summarizer.capabilities();
+if (available.available === 'no') {
+  // Show user-friendly message
+  return;
+}
 
-Remember: This is a privacy-first, on-device AI application. Default behaviour should never send user data off the device.
+// Use with error handling
+try {
+  const summary = await ai.summarizer.summarise(text);
+  return summary;
+} catch (error) {
+  console.error('Summarisation failed:', error);
+  // Provide fallback or user message
+}
+```
+
+### File Parsing
+```typescript
+// Client-side parsing only
+import { pdfjs } from 'pdf-js'; // Example
+import mammoth from 'mammoth';
+import * as XLSX from 'xlsx';
+
+// Parse locally, never send raw files to server
+```
+
+### British English Examples
+- "Summarise" not "Summarize"
+- "Colour" not "Color"  
+- "Behaviour" not "Behavior"
+- "Optimisation" not "Optimization"
+
+## Don't Do These Things
+
+- ❌ Add server dependencies for file parsing
+- ❌ Send raw email content or attachments to external servers
+- ❌ Skip AI model availability checks
+- ❌ Use American spelling in user-facing text
+- ❌ Add unnecessary external dependencies
+- ❌ Block the main thread with heavy processing
+- ❌ Store user data without explicit consent
+- ❌ Implement features without reading SPEC.md acceptance criteria
+
+## Testing & Quality
+
+- Run `npm run lint` and `npm run test:run` before submitting
+- Add unit tests for critical functionality
+- Test error conditions and edge cases
+- Verify accessibility with keyboard navigation
+- Test with Chrome AI models available and unavailable
+
+Remember: This project demonstrates privacy-preserving AI workflows. Every decision should prioritise user privacy and on-device processing while maintaining excellent user experience.
