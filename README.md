@@ -1,57 +1,111 @@
 # Inbox Triage App
 
-A web-based email triage companion that helps you summarise email threads, understand attachments and generate reply drafts — all running primarily on-device using Chrome’s built-in AI. It complements the Inbox Triage Extension by providing a browser-based interface that works outside of Gmail/Outlook and offers import and webhook integrations for new emails.
+**Cut through email overload in seconds, not minutes.**
 
-## Why build it
+A web-based email triage companion that helps you summarise email threads, understand attachments and generate reply drafts — all running primarily on-device using Chrome's built-in AI. Works outside Gmail/Outlook with support for paste, import, and webhook integrations.
 
-Modern email overload is real. The extension solves it in-context, but sometimes you want to triage outside your inbox or handle incoming messages automatically. This app lets you paste, import or subscribe to new message notifications, then uses on-device AI to produce useful summaries and responses.
+**Key value:** Turn 15-minute email processing into 30-second decisions while keeping your data private.
+
+## Docs map
+
+Navigate the project documentation:
+
+- **[SPEC.md](SPEC.md)** – Complete functional and technical requirements
+- **[AGENTS.md](AGENTS.md)** – Development guide for AI coding agents and contributors  
+- **[.github/copilot-instructions.md](.github/copilot-instructions.md)** – GitHub Copilot configuration and rules
+- **[TODO.md](TODO.md)** – Project task list and progress tracking
+
+## Quickstart
+
+### Prerequisites
+- Chrome browser (for built-in AI APIs)
+- Node.js 18+ and npm
+
+### Install, develop, and test
+```bash
+# Clone and navigate
+git clone https://github.com/mitchellfyi/inbox-triage-app.git
+cd inbox-triage-app/web-app
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Open http://localhost:3000 in Chrome
+
+# Run tests and linting
+npm run test:run
+npm run lint
+npm run format
+```
+
+### Production build
+```bash
+npm run build
+npm run start
+```
+
+## Architecture at a glance
+
+The app follows a **privacy-first, on-device AI** architecture:
+
+- **Frontend**: Next.js 15 + React + TypeScript with App Router
+- **AI Processing**: Chrome's built-in Task APIs (Summarizer, Prompt, Multimodal)
+- **File Parsing**: Client-side parsers (PDF.js, mammoth.js, SheetJS)
+- **Email Integration**: OAuth flows (Gmail/Outlook) with minimal scopes
+- **Webhooks**: Optional server endpoints for new email notifications
+- **Hybrid Fallback**: Secure server processing when local AI unavailable
+- **Storage**: localStorage for preferences (on-device mode)
+
+For detailed architecture and components, see [SPEC.md](SPEC.md).
 
 ## Features
 
 - **Thread summarisation** – Paste or import an email thread and get a TL;DR plus key points.
 - **Attachment understanding** – Upload PDFs, DOCX, XLSX or images; the app parses and summarises them locally.
 - **Reply drafts with tone control** – Generate three reply drafts with custom tone and optional guidance.
-- **Multimodal Q&A** – Ask questions about images or screenshots using the Prompt API’s multimodal capabilities.
+- **Multimodal Q&A** – Ask questions about images or screenshots using the Prompt API's multimodal capabilities.
 - **Voice guidance** – Dictate additional instructions via the Web Speech API.
 - **Email import & webhooks** – Sign in with Gmail or Outlook to fetch threads and attachments; optional server webhook to receive new messages.
-- **Hybrid fallback** – When the device can’t process locally, fallback to a secure server using minimal derived text; you control whether this happens.
+- **Hybrid fallback** – When the device can't process locally, fallback to a secure server using minimal derived text; you control whether this happens.
 
-## Documentation
+## Privacy guarantees
 
-This repo contains several important documents to guide development:
+**Default: 100% on-device processing**
+- All AI tasks run in Chrome's built-in models
+- Email content never leaves your device
+- Attachments parsed locally (PDF.js, mammoth.js, SheetJS)
+- User preferences stored in browser localStorage
 
-- [SPEC.md](SPEC.md) – Functional and technical requirements.
-- [AGENTS.md](AGENTS.md) – Guidelines for AI coding agents and contributors.
-- [TODO.md](TODO.md) – Task list and project progress.
+**Optional: Hybrid fallback mode**
+- Used only when local models unavailable or context too large
+- Sends only derived text summaries, never raw emails or attachments
+- Requires explicit user consent with clear data flow explanation
+- Server processing is minimal and stateless
 
-## Getting started
+See [SPEC.md](SPEC.md) for complete privacy and security details.
 
-### Web Application
+## Contributing flow
 
-To run the web app locally:
+1. **Read the docs first**: [SPEC.md](SPEC.md) → [AGENTS.md](AGENTS.md) → [TODO.md](TODO.md)
+2. **Find or create a task**: Check [TODO.md](TODO.md) for open items or GitHub issues
+3. **Assign and branch**: Claim a task, create a feature branch
+4. **Develop**: Follow [AGENTS.md](AGENTS.md) coding rules and workflow
+5. **Test and lint**: Run `npm test`, `npm run lint` before submitting
+6. **Pull request**: Reference issue, describe changes, ensure CI passes
+7. **Update docs**: Keep [TODO.md](TODO.md) status current after merging
 
-1. Clone the repository and navigate to the web app:
+### Development rules
+- **On-device first**: Use Chrome AI APIs; only fallback to server when needed
+- **British English**: All user-facing text
+- **No external dependencies**: Avoid unnecessary packages
+- **Accessibility**: WCAG 2.1 AA compliance
+- **Type safety**: Comprehensive TypeScript usage
+- **Test coverage**: Unit tests for critical functionality
 
-    ```bash
-    git clone https://github.com/mitchellfyi/inbox-triage-app.git
-    cd inbox-triage-app/web-app
-    ```
-
-2. Install dependencies:
-
-    ```bash
-    npm install
-    ```
-
-3. Start the development server:
-
-    ```bash
-    npm run dev
-    ```
-
-4. Open `http://localhost:3000` in your browser.
-
-### Available Scripts
+## Available Scripts
 
 In the `web-app` directory, you can run:
 
@@ -62,17 +116,3 @@ In the `web-app` directory, you can run:
 - `npm run test:run` - Run tests once
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
-
-The web app is built with Next.js, React, and TypeScript. It uses no external servers by default. To enable Gmail/Outlook import or hybrid fallback, follow the instructions in the spec.
-
-## Contributing
-
-- Read **SPEC.md** and **AGENTS.md** before writing code. They describe the requirements, constraints and workflow.
-- Keep all processing on-device unless explicitly using the hybrid fallback.
-- Use British English for all user-facing text.
-- Update **TODO.md** as tasks are completed or added.
-- Make pull requests against `main` with clear commit messages.
-
-## Privacy and security
-
-By default, all AI tasks run in the browser with no data leaving your device. When hybrid fallback is enabled, only derived text (never raw files) is sent to a remote service. See the spec for details.
