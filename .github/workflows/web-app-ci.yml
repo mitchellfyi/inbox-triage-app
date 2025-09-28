@@ -38,5 +38,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: web-app-dist
-        path: web-app/dist
+        path: web-app/.next
         retention-days: 7

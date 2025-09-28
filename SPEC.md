@@ -61,7 +61,7 @@ This web application is a companion to the Inbox Triage Extension. It allows use
 ## Technical Requirements
 
 1. **Client Technology (TR1)**  
-   - Use React with Vite for the front end.  
+   - Use React with Next.js for the front end.  
    - Use TypeScript for type safety.  
    - Use Chrome’s built‑in AI task APIs (Summarizer, Prompt) available in the browser.
 
