@@ -1,18 +1,105 @@
+'use client';
+
+import React, { useState, useCallback, useEffect } from 'react';
+import EmailThreadInput from '../components/EmailThreadInput';
+import ThreadSummary from '../components/ThreadSummary';
+import { 
+  getTlDr, 
+  getKeyPoints, 
+  checkSummariserAvailability, 
+  SummariserAvailability,
+  type SummariserError 
+} from '../lib/ai/summarizer';
+
 export default function Home() {
+  const [tldr, setTldr] = useState<string>();
+  const [keyPoints, setKeyPoints] = useState<string[]>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string>();
+  const [availability, setAvailability] = useState<SummariserAvailability>();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // Check AI model availability on component mount
+  useEffect(() => {
+    async function checkAvailability() {
+      try {
+        const status = await checkSummariserAvailability();
+        setAvailability(status);
+      } catch (err) {
+        console.error('Failed to check summariser availability:', err);
+        setAvailability(SummariserAvailability.UNAVAILABLE);
+      }
+    }
+
+    checkAvailability();
+  }, []);
+
+  const handleTextSubmit = useCallback(async (text: string) => {
+    // Clear previous results and errors
+    setTldr(undefined);
+    setKeyPoints(undefined);
+    setError(undefined);
+    setIsLoading(true);
+
+    try {
+      // Check if model needs downloading
+      const currentAvailability = await checkSummariserAvailability();
+      setAvailability(currentAvailability);
+      
+      if (currentAvailability === SummariserAvailability.AFTER_DOWNLOAD) {
+        setIsDownloading(true);
+      }
+
+      // Generate TL;DR and key points concurrently
+      const [tldrResult, keyPointsResult] = await Promise.all([
+        getTlDr(text),
+        getKeyPoints(text)
+      ]);
+
+      setTldr(tldrResult);
+      setKeyPoints(keyPointsResult);
+    } catch (err) {
+      console.error('Summarisation failed:', err);
+      
+      const summariserError = err as SummariserError;
+      setError(summariserError.userMessage || 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
+      setIsDownloading(false);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="flex items-center justify-center py-20 px-8">
-        <main className="max-w-4xl mx-auto text-center">
-          <header className="bg-white p-8 rounded-lg shadow-md">
-            <h1 className="text-4xl font-semibold text-gray-800 mb-4">
+      <div className="py-8 px-4">
+        <main className="max-w-4xl mx-auto">
+          {/* Header */}
+          <header className="bg-white p-8 rounded-lg shadow-md mb-8">
+            <h1 className="text-4xl font-semibold text-gray-800 mb-4 text-center">
               Inbox Triage App
             </h1>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
+            <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto text-center">
               A web-based email triage companion that helps you summarise email
               threads, understand attachments and generate reply drafts — all
               running primarily on-device using Chrome&apos;s built-in AI.
             </p>
           </header>
+
+          {/* Email Thread Input */}
+          <EmailThreadInput 
+            onTextSubmit={handleTextSubmit}
+            isLoading={isLoading || isDownloading}
+          />
+
+          {/* Thread Summary */}
+          <ThreadSummary
+            tldr={tldr}
+            keyPoints={keyPoints}
+            isLoading={isLoading}
+            error={error}
+            availability={availability}
+            isDownloading={isDownloading}
+          />
         </main>
       </div>
     </div>
