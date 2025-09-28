@@ -19,6 +19,30 @@ The application demonstrates the power of on-device AI for sensitive workflows w
 - **Personalised Experience**: Learn user preferences and provide customisable draft generation with voice guidance support
 - **Technical Excellence**: Demonstrate proper use of Chrome's AI Task APIs with graceful fallbacks and secure architecture
 
+## Non-Goals and Constraints
+
+### Non-Goals
+- **Email client replacement**: This is a companion tool, not a full email client
+- **Server-first processing**: All features must work on-device by default
+- **Universal browser support**: Optimised specifically for Chrome's AI capabilities
+- **Enterprise integration**: Focus on individual users, not organisational workflows
+- **Real-time collaboration**: Single-user experience with personal preferences
+
+### Technical Constraints
+- **Chrome MV3 only**: Built specifically for Chrome's extension manifest V3 and built-in AI APIs
+- **No external network calls by default**: All processing happens locally unless user explicitly enables hybrid mode
+- **On-device AI only**: Primary functionality relies on Chrome's Summarizer, Prompt, and Multimodal APIs
+- **Client-side file parsing**: PDFs, documents, and images processed in browser without server uploads
+- **Minimal server footprint**: Hybrid fallback uses stateless processing with no data retention
+
+### API Boundaries and Architecture
+- **Content Scripts**: Handle Gmail/Outlook DOM interaction for OAuth import flows
+- **Background Service Worker**: Manage webhook subscriptions and coordinate AI processing
+- **Side Panel/Main App**: React-based UI for user interactions and results display
+- **Message Passing**: Communication between content scripts, background worker, and UI components
+- **Local Storage**: User preferences and settings persistence (on-device mode)
+- **Optional Server APIs**: Hybrid fallback endpoints with explicit user consent
+
 ## Functional Requirements
 
 ### 1. Thread Summarisation (FR1)
@@ -39,6 +63,11 @@ The application demonstrates the power of on-device AI for sensitive workflows w
 - [ ] Error states are handled gracefully with clear user messaging
 - [ ] Summaries maintain context and accuracy for multi-participant conversations
 - [ ] Results are displayed in an accessible, responsive interface
+
+**Given-When-Then Scenarios**:
+- **Given** a user pastes a 5,000-character email thread, **when** they click "Summarise", **then** they receive a TL;DR and key points within 3 seconds
+- **Given** Chrome's Summarizer API is unavailable, **when** a user attempts summarisation, **then** they see a clear message explaining model availability and next steps
+- **Given** a multi-participant email thread, **when** summarised, **then** the output preserves participant context and action items
 
 ### 2. Attachment Parsing and Analysis (FR2)
 **Purpose**: Extract and analyse content from common document formats using client-side processing.

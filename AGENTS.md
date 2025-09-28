@@ -4,9 +4,47 @@ This guide is for AI coding agents and human contributors working on the **Inbox
 
 ## Where to start
 
-- **Read `SPEC.md` and `README.md` first.** Understand the high‑level goals, functional and technical requirements, and the problem the app solves.
-- **Check `TODO.md`.** This document lists all the current tasks, their status and links to issues. Choose a task, make sure you understand its scope and acceptance criteria, then claim it via an issue or pull request.
-- **Review the GitHub issues.** Each issue contains a detailed problem statement, solution outline, tasks and definition of done. Stick to the acceptance criteria.
+**Essential reading order:**
+1. **[SPEC.md](SPEC.md)** – Understand the high-level goals, functional and technical requirements, constraints, and acceptance criteria
+2. **[README.md](README.md)** – Get the project overview, architecture, and quickstart instructions  
+3. **[TODO.md](TODO.md)** – Review current tasks, their status, and find an item to work on
+4. **GitHub issues** – Check for detailed problem statements and solution outlines
+
+**Before writing any code:**
+- Ensure you understand the privacy-first, on-device constraints
+- Confirm you can run the development environment (`npm run dev`, tests, linting)
+- Choose a specific task from TODO.md or create a GitHub issue
+- Read the acceptance criteria for your chosen feature
+
+## Agent loop: read → plan → small PRs → tests → docs update
+
+**1. Read and understand**
+- Study SPEC.md for requirements and constraints
+- Review existing code architecture and patterns  
+- Understand the specific task acceptance criteria
+
+**2. Plan the solution**  
+- Break down the task into minimal, testable changes
+- Consider edge cases and error handling
+- Ensure alignment with on-device AI principles
+- Plan for accessibility and performance
+
+**3. Implement in small increments**
+- Create a focused feature branch
+- Make the smallest possible changes to achieve the goal
+- Follow existing code patterns and naming conventions
+- Test each change immediately
+
+**4. Tests and quality**
+- Add or update unit tests for new functionality
+- Run `npm run test`, `npm run lint` before committing
+- Verify accessibility with keyboard navigation
+- Check responsiveness across screen sizes
+
+**5. Documentation updates**
+- Update relevant sections in README.md, SPEC.md, or this guide
+- Mark completed tasks in TODO.md
+- Add new tasks if your work creates them
 
 ## Development principles
 
@@ -20,14 +58,58 @@ This guide is for AI coding agents and human contributors working on the **Inbox
 - **Privacy and security.** Never store or log email contents, attachments or user data beyond what is necessary for the feature. When hybrid mode sends data to the server, send only the smallest required text and document the exact data flow in the privacy notice.
 - **British English.** All user‑visible text should use British English spelling and punctuation.
 
-## Workflow for agents
+## Coding rules and patterns
 
-1. **Pick a task.** Choose an open issue or line item in `TODO.md`.
-2. **Plan the solution.** Break the task into subtasks, consider edge cases and ensure it aligns with the SPEC and this guide.
-3. **Implement in a feature branch.** Follow the project structure and naming conventions. Add or update unit tests where appropriate.
-4. **Update docs.** If you introduce a new component, API call or configuration, update `README.md`, `SPEC.md` or this guide as necessary. If the task creates a new feature, add a corresponding line to `TODO.md`.
-5. **Submit a pull request.** Reference the issue number, describe what you did, why and how, and list any trade‑offs. Ensure the PR passes lint and tests.
-6. **Review and revise.** Address code review comments promptly and maintain a collaborative tone.
+### Directory structure and naming
+- **Components**: Place in `src/components/` with PascalCase naming (`EmailThreadInput.tsx`)
+- **Business logic**: Separate into `src/lib/` modules (`src/lib/ai/summarizer.ts`)
+- **API routes**: Use `src/app/api/` with kebab-case (`/api/gmail-import/`)
+- **Types**: Define in `src/types/` or co-located with components
+- **Tests**: Mirror source structure in `__tests__/` directories
+
+### Dependencies and imports
+- **Avoid new dependencies**: Use existing libraries where possible
+- **Import order**: React, Next.js, internal modules, external packages, types
+- **No server dependencies**: Client-side parsing libraries only (PDF.js, mammoth.js, SheetJS)
+
+### Error handling strategy  
+- **User-facing errors**: Clear, actionable messages in British English
+- **Developer errors**: Log to console.error() with context
+- **AI API errors**: Check availability first, provide fallback options
+- **Network errors**: Distinguish between client and server issues
+
+### Accessibility requirements
+- **Keyboard navigation**: All interactive elements accessible via keyboard
+- **Screen readers**: Proper ARIA labels and semantic HTML
+- **High contrast**: Ensure sufficient colour contrast ratios
+- **Focus management**: Clear focus indicators and logical tab order
+
+### Commit message pattern
+```
+type(scope): summary
+
+feat(summarizer): add TL;DR generation with error handling
+fix(oauth): resolve PKCE flow redirect issue
+docs(readme): update quickstart instructions
+test(attachment): add PDF parsing unit tests
+refactor(ui): extract common button component
+```
+
+Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`
+Scopes: `summarizer`, `oauth`, `ui`, `attachment`, `webhook`, `hybrid`
+
+## Don't list: avoid these patterns
+
+❌ **Don't add new dependencies** without justification in SPEC.md
+❌ **Don't make remote API calls** in default on-device mode  
+❌ **Don't store PII** (email content, attachments) beyond session
+❌ **Don't create UI without keyboard access** or screen reader support
+❌ **Don't use external AI services** as primary processing method
+❌ **Don't skip error handling** for AI API availability or parsing failures
+❌ **Don't hard-code text strings** – use constants for user-facing text
+❌ **Don't block the main thread** for heavy parsing or AI processing
+❌ **Don't expose secrets** in client-side code or commit history
+❌ **Don't use American English** spelling in user interface text
 
 ## Common gotchas
 

@@ -1,50 +1,85 @@
 # TODO List
 
-This document tracks tasks for developing the **Inbox Triage App**. Each task should have a status and link to the related issue when available. Feel free to update statuses and add new tasks as the project evolves.
+Project-wide task tracker for the **Inbox Triage App**. Each task includes a title, optional owner, links to issues/PRs, and current status.
+
+## How to use this TODO
+
+**For contributors:**
+1. **Pick a task** – Choose an item marked `[ ]` (to do) or `[~]` (help wanted)  
+2. **Create a branch** – Use pattern `feature/task-name` or `fix/issue-name`
+3. **Mark in progress** – Change `[ ]` to `[~]` and add your name as owner
+4. **Work and PR** – Follow the workflow in [AGENTS.md](AGENTS.md)
+5. **Update status** – Mark `[x]` when merged, link to PR number
+
+**For project maintainers:**
+- Add new tasks as `[ ]` with clear acceptance criteria
+- Reference GitHub issues when available (`Issue: #123`)
+- Keep status current and update priorities as needed
+- Archive completed sections periodically
 
 ## Legend
-- **[ ]** To do
-- **[\~]** In progress
-- **[x]** Done
+- **[ ]** To do (available)
+- **[~]** In progress (assigned)  
+- **[x]** Done (completed)
+- **[?]** Blocked or needs clarification
 
-## Project setup
+## Docs
+
+- [x] **Tighten README.md** – Add crisp overview, docs map, quickstart, architecture, privacy guarantees, contributing flow. (PR: #??)
+- [x] **Update SPEC.md** – Add non-goals, constraints, API boundaries, acceptance criteria format. (PR: #??)
+- [x] **Update AGENTS.md** – Add "Where to start", agent loop, coding rules, commit patterns, "don't" list. (PR: #??)
+- [x] **Create .github/copilot-instructions.md** – Reference key docs, guardrails, "When contributing" bullets. (PR: #??)
+- [x] **Restructure TODO.md** – Project-wide checklist with sections and usage guidance. (PR: #??)
+- [ ] **Add GitHub templates** – PR template and issue templates for feature/bug reports. (Issue: #??)
+- [ ] **Verify documentation links** – Ensure all inter-document links are relative and working. (Issue: #??)
+
+## Extension Core
 
 - [x] **Scaffold web app project structure** – Create `/web-app` folder with React + Next.js + TypeScript; set up basic routing and CI/CD for deployment. (Issue: #??)
 - [x] **Add ESLint, Prettier and unit test framework** – Ensure code quality and consistency across contributions. (Issue: #??)
+- [ ] **Integrate Chrome AI Task APIs** – Add Summarizer, Prompt, and Multimodal API detection and integration with availability checks. (Issue: #??)
+- [ ] **Build AI processing modules** – Create `src/lib/ai/` modules for summarizer, prompt, and multimodal processing with error handling. (Issue: #??)
+- [ ] **Add AI model availability checker** – UI component that checks and displays Chrome AI model status with download guidance. (Issue: #??)
 
-## Core features
+## Gmail Extraction
 
-- [ ] **Integrate Summarizer API** – Implement a module for TL;DR and key points summarisation of email threads. Handle availability checks and errors. (Issue: #??)
-- [ ] **Integrate Prompt API for draft generation** – Use JSON schema to produce three reply drafts with adjustable tone and incorporate free-text guidance. (Issue: #??)
-- [ ] **Implement attachment parsing** – Parse PDFs (PDF.js), DOCX (mammoth.js), XLS/XLSX/CSV (SheetJS) and extract text for summarisation. (Issue: #??)
-- [ ] **Implement multimodal Q&A** – Let users upload images or select screenshots and ask questions using the Prompt API with image input; summarise results. (Issue: #??)
-- [ ] **Add guidance box and voice dictation** – Provide a textarea for user instructions appended to prompt; use Web Speech API for voice input. (Issue: #??)
+- [ ] **Gmail OAuth implementation** – PKCE flow for Gmail API access with minimal read-only scopes. (Issue: #??)
+- [ ] **Gmail thread import** – Fetch email threads and attachments via Gmail API, parse into standard format. (Issue: #??)  
+- [ ] **Gmail webhook subscription** – Use Google Pub/Sub to receive new message notifications. (Issue: #??)
+- [ ] **Gmail content parsing** – Extract email body, attachments, metadata while preserving thread structure. (Issue: #??)
 
-## Email integration
+## Outlook Extraction  
 
-- [ ] **Gmail OAuth import** – Implement Gmail OAuth PKCE flow to fetch email threads and attachments via the Gmail API; request minimal read-only scopes. (Issue: #??)
-- [ ] **Outlook OAuth import** – Implement Microsoft identity + Graph API flow to fetch email threads and attachments; ensure cross-browser compatibility. (Issue: #??)
-- [ ] **Webhook subscription for new emails** – Allow users to receive notifications when new emails arrive via Gmail or Outlook webhooks, retrieving message content automatically. (Issue: #??)
+- [ ] **Outlook OAuth implementation** – Microsoft Graph API integration with minimal scopes. (Issue: #??)
+- [ ] **Outlook thread import** – Fetch conversations and attachments via Graph API. (Issue: #??)
+- [ ] **Outlook webhook subscription** – Microsoft Graph webhook notifications for new emails. (Issue: #??)
+- [ ] **Outlook content parsing** – Handle Outlook-specific email formats and attachment types. (Issue: #??)
 
-## Hybrid and privacy
+## Drafting
 
-- [ ] **Hybrid fallback logic** – Write a `hybrid/decider.ts` module that checks model availability and context size, falling back to a server summarisation endpoint when needed. (Issue: #??)
-- [ ] **User configuration & privacy toggle** – Build a settings dialog where users choose on-device only vs hybrid mode, with clear explanations of what data leaves the device. (Issue: #??)
-- [ ] **Define hybrid decision rules and privacy copy** – Document thresholds for switching to cloud and craft user-facing privacy copy; update docs accordingly. (Issue: #??)
+- [ ] **Reply draft generation** – Use Prompt API with JSON schema to produce three reply drafts with tone control. (Issue: #??)
+- [ ] **Tone and style controls** – UI for selecting professional, friendly, formal, casual reply styles. (Issue: #??)
+- [ ] **Custom guidance input** – Textarea for user instructions that get appended to reply generation prompts. (Issue: #??)
+- [ ] **Voice guidance via Speech API** – Web Speech API integration for dictating additional instructions. (Issue: #??)
 
-## Memory and preferences
+## Side Panel UI
 
-- [ ] **Persist user preferences** – Store tone, hybrid mode choice, default guidance text and other settings in `localStorage` or server storage (with consent). (Issue: #??)
-- [ ] **User-specific instruction memory** – Allow users to save custom instructions or prompts that the app uses for generating drafts; show them in the UI. (Issue: #??)
+- [ ] **Email thread input interface** – Text area and import buttons with validation and character count. (Issue: #??)
+- [ ] **Attachment upload and parsing** – Drag-and-drop file interface with PDF.js, mammoth.js, SheetJS integration. (Issue: #??)
+- [ ] **Multimodal image Q&A** – Image upload with question input for Prompt API multimodal processing. (Issue: #??)
+- [ ] **Results display components** – Clean, accessible presentation of summaries, key points, and reply drafts. (Issue: #??)
+- [ ] **Settings and preferences** – User configuration for default tone, hybrid mode, guidance text. (Issue: #??)
+- [ ] **Loading states and error handling** – Progressive feedback during AI processing and clear error messages. (Issue: #??)
 
-## Demo and testing
+## QA
 
-- [ ] **Prepare demo fixtures** – Collect a sample email thread, a PDF, a DOCX, an XLSX and a chart image for demo purposes; add them to `demo-fixtures/`. (Issue: #??)
-- [ ] **Write demo script** – Prepare a three-minute script that showcases thread summarisation, attachment analysis, multimodal Q&A, guidance input and hybrid fallback. (Issue: #??)
+- [ ] **Prepare demo fixtures** – Sample email thread, PDF, DOCX, XLSX, and image for demonstration purposes. (Issue: #??)
+- [ ] **Write demo script** – Three-minute showcase script covering all major features. (Issue: #??)
+- [ ] **Unit test coverage** – Tests for AI integration, file parsing, OAuth flows, and UI components. (Issue: #??)
+- [ ] **End-to-end testing** – Browser automation tests for complete user workflows. (Issue: #??)
+- [ ] **Accessibility audit** – WCAG 2.1 AA compliance verification and keyboard navigation testing. (Issue: #??)
+- [ ] **Performance testing** – Load testing for file parsing and AI processing with large inputs. (Issue: #??)
 
-## Documentation
+---
 
-- [ ] **Update README.md** – Reflect new features, installation steps, permissions, privacy explanation and usage instructions. (Issue: #??)
-- [ ] **Update SPEC.md** – Add requirements for webhooks, OAuth imports, user memory and hybrid mode; include acceptance criteria for each. (Issue: #??)
-- [ ] **Update AGENTS.md** – Reference the new features and update the workflow or gotchas as needed. (Issue: #??)
-- [ ] **Maintain this TODO** – After completing tasks or adding new ones, update statuses and issue references.
+**Last updated**: [Current date] | **Next priorities**: Chrome AI integration, file parsing, Gmail OAuth
