@@ -3,14 +3,16 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import GmailImport from '../../components/GmailImport';
+import OutlookImport from '../../components/OutlookImport';
 import type { ImportedEmail } from '../../types/gmail';
+import type { ImportedOutlookEmail } from '../../types/outlook';
 import type { ParsedAttachment } from '../../types/attachment';
 
 export default function ImportPage() {
   const router = useRouter();
   const [importError, setImportError] = useState<string | null>(null);
 
-  const handleImportComplete = useCallback((emails: ImportedEmail[], attachments: ParsedAttachment[]) => {
+  const handleImportComplete = useCallback((emails: ImportedEmail[] | ImportedOutlookEmail[], attachments: ParsedAttachment[]) => {
     // Combine email content into a single thread for analysis
     const combinedContent = emails.map(email => {
       const header = `From: ${email.from}\nTo: ${email.to.join(', ')}\nSubject: ${email.subject}\nDate: ${email.date.toLocaleString()}\n\n`;
@@ -80,20 +82,12 @@ export default function ImportPage() {
               />
             </div>
             
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-              <h2 className="text-xl font-medium text-gray-800 mb-2">Outlook Import</h2>
-              <p className="text-gray-600 mb-4">
-                Connect to Outlook with read-only permissions to import your emails.
-              </p>
-              <button 
-                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors"
-                disabled
-              >
-                Connect Outlook (Coming Soon)
-              </button>
-              <p className="text-xs text-gray-500 mt-2">
-                Outlook integration will be available in a future update.
-              </p>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+              <h2 className="text-xl font-medium text-gray-800 mb-4 text-center">Outlook Import</h2>
+              <OutlookImport 
+                onImportComplete={handleImportComplete}
+                onError={handleImportError}
+              />
             </div>
           </div>
         </div>

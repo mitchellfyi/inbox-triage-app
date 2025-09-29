@@ -39,9 +39,9 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
         
         // Extract text from page
         const pageText = textContent.items
-          .map((item: { str?: string }) => {
-            if ('str' in item && item.str) {
-              return item.str;
+          .map((item) => {
+            if ('str' in item && typeof (item as unknown as {str?: string}).str === 'string') {
+              return (item as unknown as {str: string}).str;
             }
             return '';
           })
@@ -120,8 +120,13 @@ interface PDFPage {
  * Extract text from a page by rendering it as an image and using multimodal AI
  * This is a fallback for scanned PDFs or pages with no extractable text
  */
-async function extractTextFromPageImage(page: PDFPage): Promise<string | null> {
+async function extractTextFromPageImage(page: pdfjsLib.PDFPageProxy): Promise<string | null> {
   try {
+    // Check if we're in the browser environment
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    
     // Check if multimodal AI is available
     if (!window.ai?.prompt) {
       return null;
@@ -139,6 +144,7 @@ async function extractTextFromPageImage(page: PDFPage): Promise<string | null> {
     
     await page.render({
       canvasContext: context,
+      canvas: canvas,
       viewport: viewport,
     }).promise;
     

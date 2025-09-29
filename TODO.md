@@ -56,10 +56,10 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 
 ## Outlook Extraction  
 
-- [ ] **Outlook OAuth implementation** – Microsoft Graph API integration with minimal scopes. (Issue: #??)
-- [ ] **Outlook thread import** – Fetch conversations and attachments via Graph API. (Issue: #??)
-- [ ] **Outlook webhook subscription** – Microsoft Graph webhook notifications for new emails. (Issue: #??)
-- [ ] **Outlook content parsing** – Handle Outlook-specific email formats and attachment types. (Issue: #??)
+- [x] **Outlook OAuth implementation** – Microsoft Graph API integration with minimal scopes using MSAL. (Issue: #??)
+- [x] **Outlook thread import** – Fetch conversations and attachments via Graph API. (Issue: #??)
+- [x] **Outlook webhook subscription** – Microsoft Graph webhook notifications for new emails with validation. (Issue: #??)
+- [x] **Outlook content parsing** – Handle Outlook-specific email formats and attachment types. (Issue: #??)
 
 ## Drafting
 

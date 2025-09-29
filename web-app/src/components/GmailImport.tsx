@@ -288,7 +288,7 @@ export default function GmailImport({ onImportComplete, onError }: GmailImportPr
           for (const attachment of email.attachments) {
             try {
               // Convert ImportedAttachment to File object for parsing
-              const file = new File([attachment.content], attachment.filename, {
+              const file = new File([new Uint8Array(attachment.content)], attachment.filename, {
                 type: attachment.mimeType
               });
               

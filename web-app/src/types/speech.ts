@@ -22,7 +22,7 @@ export interface SpeechRecognitionErrorEvent extends Event {
 
 export interface SpeechRecognition extends EventTarget {
   continuous: boolean;
-  grammars: SpeechGrammarList;
+  grammars: unknown; // SpeechGrammarList - using unknown to avoid type issues
   interimResults: boolean;
   lang: string;
   maxAlternatives: number;
