@@ -146,7 +146,7 @@ function processWorksheet(worksheet: XLSX.WorkSheet, sheetName: string, maxRows:
   } else {
     // Format as simple text data
     const sampleRows = rows.slice(0, Math.min(10, rows.length));
-    sampleRows.forEach((row, index) => {
+    sampleRows.forEach((row) => {
       if (row.some(cell => cell.length > 0)) {
         sheetText += `${row.join(' | ')}\n`;
       }

@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import EmailThreadInput from '../components/EmailThreadInput';
 import ThreadSummary from '../components/ThreadSummary';
 import ReplyDrafts from '../components/ReplyDrafts';
+import AttachmentSection from '../components/AttachmentSection';
 import { 
   getTlDr, 
   getKeyPoints, 
@@ -11,6 +12,7 @@ import {
   SummariserAvailability,
   type SummariserError 
 } from '../lib/ai/summarizer';
+import type { ParsedAttachment } from '../types/attachment';
 
 export default function Home() {
   const [tldr, setTldr] = useState<string>();
@@ -20,6 +22,7 @@ export default function Home() {
   const [error, setError] = useState<string>();
   const [availability, setAvailability] = useState<SummariserAvailability>();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [attachments, setAttachments] = useState<ParsedAttachment[]>([]);
 
   // Check AI model availability on component mount
   useEffect(() => {
@@ -74,6 +77,10 @@ export default function Home() {
     }
   }, []);
 
+  const handleAttachmentsChange = useCallback((newAttachments: ParsedAttachment[]) => {
+    setAttachments(newAttachments);
+  }, []);
+
   const hasSummary = Boolean(tldr || (keyPoints && keyPoints.length > 0));
 
   return (
@@ -96,6 +103,12 @@ export default function Home() {
           <EmailThreadInput 
             onTextSubmit={handleTextSubmit}
             isLoading={isLoading || isDownloading}
+          />
+
+          {/* Attachment Section */}
+          <AttachmentSection
+            onAttachmentsChange={handleAttachmentsChange}
+            className="mb-8"
           />
 
           {/* Thread Summary */}

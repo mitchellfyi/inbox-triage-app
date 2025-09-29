@@ -16,6 +16,7 @@ const DEFAULT_OPTIONS: Required<ParseOptions> = {
  * Parse DOCX file and extract text content
  */
 export async function parseDocx(file: File, options: ParseOptions = {}): Promise<ParsedContent> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const opts = { ...DEFAULT_OPTIONS, ...options };
   
   try {

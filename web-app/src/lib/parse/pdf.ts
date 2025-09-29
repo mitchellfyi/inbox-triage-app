@@ -30,7 +30,6 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
     const totalPages = Math.min(pdf.numPages, opts.maxPages);
     const textPages: string[] = [];
     let totalTextLength = 0;
-    let extractedPages = 0;
     
     // Process pages sequentially to avoid memory issues
     for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
@@ -40,8 +39,8 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
         
         // Extract text from page
         const pageText = textContent.items
-          .map((item: any) => {
-            if ('str' in item) {
+          .map((item: { str?: string }) => {
+            if ('str' in item && item.str) {
               return item.str;
             }
             return '';
@@ -55,7 +54,6 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
           if (imageText) {
             textPages.push(imageText);
             totalTextLength += imageText.length;
-            extractedPages++;
             continue;
           }
         }
@@ -63,7 +61,6 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
         if (pageText.length > 0) {
           textPages.push(pageText);
           totalTextLength += pageText.length;
-          extractedPages++;
         }
         
         // Break if we've extracted enough content (roughly 100k characters)
@@ -105,11 +102,25 @@ export async function parsePdf(file: File, options: ParseOptions = {}): Promise<
   }
 }
 
+// Type definitions for PDF.js interfaces
+interface PDFPageViewport {
+  width: number;
+  height: number;
+}
+
+interface PDFPage {
+  getViewport(options: { scale: number }): PDFPageViewport;
+  render(options: { 
+    canvasContext: CanvasRenderingContext2D; 
+    viewport: PDFPageViewport 
+  }): { promise: Promise<void> };
+}
+
 /**
  * Extract text from a page by rendering it as an image and using multimodal AI
  * This is a fallback for scanned PDFs or pages with no extractable text
  */
-async function extractTextFromPageImage(page: any): Promise<string | null> {
+async function extractTextFromPageImage(page: PDFPage): Promise<string | null> {
   try {
     // Check if multimodal AI is available
     if (!window.ai?.prompt) {
