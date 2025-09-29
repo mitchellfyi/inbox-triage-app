@@ -1,0 +1,20 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd web-app && npm run build",
+  "outputDirectory": "web-app/.next",
+  "installCommand": "cd web-app && npm install",
+  "functions": {
+    "web-app/src/app/api/fallback/route.ts": {
+      "maxDuration": 30
+    },
+    "web-app/src/app/api/gmail-import/route.ts": {
+      "maxDuration": 30
+    },
+    "web-app/src/app/api/outlook-import/route.ts": {
+      "maxDuration": 30
+    },
+    "web-app/src/app/api/webhook/*/route.ts": {
+      "maxDuration": 10
+    }
+  }
+}

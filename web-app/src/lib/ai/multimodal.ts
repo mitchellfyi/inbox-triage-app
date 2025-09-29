@@ -177,7 +177,7 @@ export async function askImageQuestionWithSummary(
     // Import summarizer dynamically to avoid circular dependencies
     const { getTlDr } = await import('./summarizer');
     const summary = await getTlDr(answer);
-    return summary;
+    return summary.content; // Extract the content from SummariserResult
   } catch (summaryError) {
     console.warn('Failed to summarise long response, returning original:', summaryError);
     // Return original answer if summarisation fails

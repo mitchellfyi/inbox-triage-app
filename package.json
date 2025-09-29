@@ -1,0 +1,26 @@
+{
+  "name": "inbox-triage-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A privacy-first web application that helps users summarise email threads using Chrome's built-in AI APIs",
+  "keywords": [
+    "email",
+    "triage", 
+    "ai",
+    "chrome",
+    "privacy-first"
+  ],
+  "author": "Inbox Triage Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "cd web-app && npm run dev",
+    "build": "cd web-app && npm run build",
+    "start": "cd web-app && npm run start",
+    "test": "cd web-app && npm run test:run",
+    "lint": "cd web-app && npm run lint",
+    "install": "cd web-app && npm install"
+  },
+  "workspaces": [
+    "web-app"
+  ]
+}

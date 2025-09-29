@@ -19,7 +19,18 @@ export interface WebhookStatusListener {
   (status: WebhookConnectionStatus, error?: string): void;
 }
 
-export class WebhookService {
+export interface IWebhookService {
+  start(): void;
+  stop(): void;
+  addEventListener(listener: WebhookEventListener): void;
+  removeEventListener(listener: WebhookEventListener): void;
+  addStatusListener(listener: WebhookStatusListener): void;
+  removeStatusListener(listener: WebhookStatusListener): void;
+  getState(): WebhookState;
+  getPendingEvents(): WebhookEvent[];
+}
+
+export class WebhookService implements IWebhookService {
   private eventSource: EventSource | null = null;
   private pollingInterval: NodeJS.Timeout | null = null;
   private eventListeners: WebhookEventListener[] = [];
@@ -31,6 +42,7 @@ export class WebhookService {
   constructor() {
     this.state = {
       status: WebhookConnectionStatus.DISCONNECTED,
+      eventCount: 0,
       pendingEvents: []
     };
   }
@@ -113,7 +125,7 @@ export class WebhookService {
   /**
    * Get current service state
    */
-  public getState(): WebhookServiceState {
+  public getState(): WebhookState {
     return { ...this.state };
   }
 
@@ -274,12 +286,12 @@ export class WebhookService {
 }
 
 // Singleton instance - only create in browser environment
-let webhookService: WebhookService | null = null;
+let webhookService: IWebhookService | null = null;
 
 /**
  * Get the singleton WebhookService instance
  */
-export function getWebhookService(): WebhookService {
+export function getWebhookService(): IWebhookService {
   if (typeof window === 'undefined') {
     // Return a dummy service for SSR
     return {
@@ -291,10 +303,11 @@ export function getWebhookService(): WebhookService {
       removeStatusListener: () => {},
       getState: () => ({
         status: WebhookConnectionStatus.DISCONNECTED,
+        eventCount: 0,
         pendingEvents: []
       }),
       getPendingEvents: () => []
-    } as WebhookService;
+    } as IWebhookService;
   }
 
   if (!webhookService) {
