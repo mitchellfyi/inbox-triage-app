@@ -25,21 +25,6 @@ export default function Home() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [attachments, setAttachments] = useState<ParsedAttachment[]>([]);
 
-  // Check AI model availability on component mount
-  useEffect(() => {
-    async function checkAvailability() {
-      try {
-        const status = await checkSummariserAvailability();
-        setAvailability(status);
-      } catch (err) {
-        console.error('Failed to check summariser availability:', err);
-        setAvailability(SummariserAvailability.UNAVAILABLE);
-      }
-    }
-
-    checkAvailability();
-  }, []);
-
   const handleTextSubmit = useCallback(async (text: string) => {
     // Store the thread content for draft generation
     setThreadContent(text);
@@ -77,6 +62,49 @@ export default function Home() {
       setIsDownloading(false);
     }
   }, []);
+
+  // Check AI model availability on component mount and handle imported content
+  useEffect(() => {
+    async function checkAvailability() {
+      try {
+        const status = await checkSummariserAvailability();
+        setAvailability(status);
+      } catch (err) {
+        console.error('Failed to check summariser availability:', err);
+        setAvailability(SummariserAvailability.UNAVAILABLE);
+      }
+    }
+
+    // Check for imported content from Gmail import
+    function handleImportedContent() {
+      const importedEmailContent = sessionStorage.getItem('importedEmailContent');
+      const importedAttachmentsStr = sessionStorage.getItem('importedAttachments');
+      
+      if (importedEmailContent) {
+        // Auto-populate the text input and start analysis
+        handleTextSubmit(importedEmailContent);
+        
+        // Clear from session storage after use
+        sessionStorage.removeItem('importedEmailContent');
+      }
+      
+      if (importedAttachmentsStr) {
+        try {
+          const importedAttachments: ParsedAttachment[] = JSON.parse(importedAttachmentsStr);
+          setAttachments(importedAttachments);
+          
+          // Clear from session storage after use
+          sessionStorage.removeItem('importedAttachments');
+        } catch (error) {
+          console.error('Error parsing imported attachments:', error);
+          sessionStorage.removeItem('importedAttachments');
+        }
+      }
+    }
+
+    checkAvailability();
+    handleImportedContent();
+  }, [handleTextSubmit]);
 
   const handleAttachmentsChange = useCallback((newAttachments: ParsedAttachment[]) => {
     setAttachments(newAttachments);
