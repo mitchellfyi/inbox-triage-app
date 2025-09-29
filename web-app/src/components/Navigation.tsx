@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import WebhookNotificationBadge, { WebhookNotificationDropdown } from './WebhookNotificationBadge';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const [showNotifications, setShowNotifications] = useState(false);
   
   const links = [
     { href: '/', label: 'Home' },
@@ -35,6 +38,18 @@ export default function Navigation() {
                 </Link>
               ))}
             </div>
+          </div>
+          
+          {/* Webhook notification badge */}
+          <div className="relative">
+            <WebhookNotificationBadge 
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="mr-2"
+            />
+            <WebhookNotificationDropdown
+              isOpen={showNotifications}
+              onClose={() => setShowNotifications(false)}
+            />
           </div>
         </div>
       </div>
