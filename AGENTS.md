@@ -149,4 +149,34 @@ Scopes: `summarizer`, `oauth`, `ui`, `attachment`, `webhook`, `hybrid`
 - **Cross‑origin requests.** Gmail and Outlook APIs require proper OAuth flows. Use PKCE and avoid exposing secrets.
 - **Webhook validation.** Webhook endpoints must verify signatures from Gmail/Graph. Rotate secrets and handle retries.
 
+## Deployment
+
+The app is configured for deployment on Vercel:
+
+### Pre-deployment checklist
+- [ ] All tests pass: `npm run test:run`
+- [ ] No linting errors: `npm run lint`  
+- [ ] Build succeeds: `npm run build`
+- [ ] Environment variables documented in ENVIRONMENT.md
+
+### Vercel deployment
+1. **Automatic:** Use the deploy button in README.md
+2. **Manual:** Connect GitHub repo to Vercel dashboard
+3. **Environment:** Set `NEXT_PUBLIC_GMAIL_CLIENT_ID` and `NEXT_PUBLIC_OUTLOOK_CLIENT_ID` (optional)
+4. **OAuth:** Update redirect URIs with production domain
+
+### Testing in production
+- ✅ Summarisation works without OAuth
+- ✅ Attachment parsing (PDF, DOCX, Excel)
+- ✅ Image Q&A with drag-and-drop
+- ✅ Reply draft generation
+- ✅ Settings persistence
+- ✅ Gmail/Outlook import (if OAuth configured)
+
+The `vercel.json` configuration handles:
+- Monorepo structure (`web-app/` subdirectory)
+- Serverless function timeouts
+- API route optimization
+- Build and install commands
+
 By following these guidelines and the requirements laid out in `SPEC.md`, we can build a robust, privacy‑preserving email triage web app that meets the hackathon's judging criteria and provides real value to users.
