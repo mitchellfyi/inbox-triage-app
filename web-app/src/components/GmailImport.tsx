@@ -18,8 +18,10 @@ import {
   getUserProfile 
 } from '../lib/gmail/api';
 import { parseAttachments } from '../lib/parse';
+import { 
+  GmailImportState
+} from '../types/gmail';
 import type { 
-  GmailImportState, 
   GmailImportProgress, 
   ImportedEmail 
 } from '../types/gmail';
@@ -48,42 +50,6 @@ export default function GmailImport({ onImportComplete, onError }: GmailImportPr
   const [threads, setThreads] = useState<ThreadListItem[]>([]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
-
-  // Check authentication status on mount
-  useEffect(() => {
-    if (isAuthenticated()) {
-      setState(GmailImportState.AUTHENTICATED);
-      setProgress({
-        state: GmailImportState.AUTHENTICATED,
-        message: 'Connected to Gmail'
-      });
-      loadUserProfile();
-      loadThreads();
-    }
-  }, [loadUserProfile, loadThreads]);
-
-  // Handle OAuth callback parameters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-    const error = urlParams.get('error');
-
-    if (error) {
-      setProgress({
-        state: GmailImportState.ERROR,
-        message: `Authentication failed: ${error}`
-      });
-      setState(GmailImportState.ERROR);
-      return;
-    }
-
-    if (code && state) {
-      handleOAuthCallback(code, state);
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [handleOAuthCallback]);
 
   const loadUserProfile = useCallback(async () => {
     try {
@@ -168,6 +134,19 @@ export default function GmailImport({ onImportComplete, onError }: GmailImportPr
     }
   }, [onError]);
 
+  // Check authentication status on mount
+  useEffect(() => {
+    if (isAuthenticated()) {
+      setState(GmailImportState.AUTHENTICATED);
+      setProgress({
+        state: GmailImportState.AUTHENTICATED,
+        message: 'Connected to Gmail'
+      });
+      loadUserProfile();
+      loadThreads();
+    }
+  }, [loadUserProfile, loadThreads]);
+
   const handleOAuthCallback = useCallback(async (code: string, state: string) => {
     try {
       setState(GmailImportState.AUTHENTICATING);
@@ -196,6 +175,29 @@ export default function GmailImport({ onImportComplete, onError }: GmailImportPr
       onError(`Gmail authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }, [loadUserProfile, loadThreads, onError]);
+
+  // Handle OAuth callback parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+    const error = urlParams.get('error');
+
+    if (error) {
+      setProgress({
+        state: GmailImportState.ERROR,
+        message: `Authentication failed: ${error}`
+      });
+      setState(GmailImportState.ERROR);
+      return;
+    }
+
+    if (code && state) {
+      handleOAuthCallback(code, state);
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [handleOAuthCallback]);
 
   const handleSignIn = useCallback(async () => {
     try {
