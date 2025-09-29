@@ -85,7 +85,7 @@ describe('checkMultimodalAvailability', () => {
 });
 
 describe('askImageQuestion', () => {
-  const createTestImage = (type = 'image/png', size = 1000) => {
+  const createTestImage = (type = 'image/png') => {
     return new Blob(['test image content'], { type });
   };
 
@@ -115,6 +115,7 @@ describe('askImageQuestion', () => {
     const testQuestion = 'What is this?';
     
     // Test with null image
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await expect(askImageQuestion(null as any, testQuestion))
       .rejects.toMatchObject({
         userMessage: expect.stringContaining('image'),
@@ -141,6 +142,7 @@ describe('askImageQuestion', () => {
       });
     
     // Test with null question
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await expect(askImageQuestion(testImage, null as any))
       .rejects.toMatchObject({
         userMessage: expect.stringContaining('question'),

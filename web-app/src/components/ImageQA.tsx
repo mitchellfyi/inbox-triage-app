@@ -3,7 +3,7 @@
  * Uses Chrome's multimodal AI capabilities to answer questions about images
  */
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { askImageQuestionWithSummary, checkMultimodalAvailability, MultimodalAvailability } from '../lib/ai/multimodal';
 
 interface ImageQAProps {
@@ -27,9 +27,9 @@ export default function ImageQA({ className = '' }: ImageQAProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check AI availability on mount
-  useState(() => {
+  useEffect(() => {
     checkMultimodalAvailability().then(setAvailability);
-  });
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -52,7 +52,7 @@ export default function ImageQA({ className = '' }: ImageQAProps) {
     if (imageFiles.length > 0) {
       handleImageFiles(imageFiles);
     }
-  }, []);
+  }, [handleImageFiles]);
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -60,7 +60,7 @@ export default function ImageQA({ className = '' }: ImageQAProps) {
       const imageFiles = files.filter(file => file.type.startsWith('image/'));
       handleImageFiles(imageFiles);
     }
-  }, []);
+  }, [handleImageFiles]);
 
   const handleImageFiles = useCallback((files: File[]) => {
     const supportedFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];

@@ -36,7 +36,7 @@ export interface MultimodalError extends Error {
 /**
  * Create a structured error for multimodal operations
  */
-function createMultimodalError(error: Error, operation: string): MultimodalError {
+function createMultimodalError(error: Error, _operation: string): MultimodalError {
   let code: MultimodalError['code'] = 'UNKNOWN';
   let userMessage = 'An unexpected error occurred while processing your image question.';
 
@@ -65,6 +65,7 @@ function createMultimodalError(error: Error, operation: string): MultimodalError
   multimodalError.code = code;
   multimodalError.userMessage = userMessage;
   multimodalError.name = 'MultimodalError';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (multimodalError as any).cause = error;
 
   return multimodalError;

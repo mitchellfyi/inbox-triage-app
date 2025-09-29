@@ -2,6 +2,15 @@
 
 This is a web-based email triage companion that helps you summarise email threads, understand attachments and generate reply drafts using Chrome's built-in AI.
 
+## Features
+
+- **Thread Summarisation**: Generate TL;DR summaries and key points from email threads
+- **Attachment Parsing**: Extract content from PDF, DOCX, XLSX, and other document formats
+- **Image Q&A**: Ask questions about uploaded images using multimodal AI
+- **Reply Draft Generation**: Create contextual reply drafts with tone control
+- **Privacy-First**: All processing happens on-device using Chrome's built-in AI
+- **Hybrid Fallback**: Optional server-side processing for enhanced capabilities
+
 ## Architecture
 
 The app uses Next.js 15 with the App Router for modern React development with the following structure:
@@ -81,18 +90,24 @@ Configure the environment variables as needed for OAuth, webhooks, and hybrid se
 - ✅ Navigation component
 - ✅ Basic pages (Home, Import, Settings)
 - ✅ Responsive design
+- ✅ Chrome AI Summarizer integration (TL;DR and key points)
+- ✅ Chrome AI Prompt API integration (reply draft generation)
+- ✅ Chrome AI Multimodal API integration (image Q&A)
+- ✅ Client-side attachment parsing (PDF.js, mammoth.js, SheetJS)
+- ✅ Image Q&A component with drag-and-drop upload
+- ✅ Error handling and availability checks for AI models
+- ✅ Comprehensive unit tests (93 tests passing)
 
 ## Features Planned
 
 These features will be implemented in future iterations:
 
-- [ ] Chrome AI Task APIs integration (Summarizer, Prompt, Multimodal)
-- [ ] Client-side attachment parsing (PDF.js, mammoth.js, SheetJS)
 - [ ] Gmail/Outlook OAuth authentication  
 - [ ] Webhook implementations
 - [ ] User preferences persistence
 - [ ] Hybrid fallback logic
 - [ ] Voice guidance (Web Speech API)
+- [ ] Screenshot capture functionality
 
 ## Project Structure
 
@@ -110,7 +125,31 @@ src/
 │   ├── layout.tsx          # Root layout
 │   └── page.tsx            # Home page
 ├── components/             # Reusable components
-└── test/                   # Test utilities
+│   ├── __tests__/          # Component tests
+│   ├── AttachmentSection.tsx
+│   ├── AttachmentUpload.tsx
+│   ├── EmailThreadInput.tsx
+│   ├── ImageQA.tsx         # Image Q&A component
+│   ├── Navigation.tsx
+│   ├── ReplyDrafts.tsx
+│   └── ThreadSummary.tsx
+├── lib/                    # Business logic modules
+│   ├── ai/                 # AI integration modules
+│   │   ├── __tests__/      # AI module tests
+│   │   ├── multimodal.ts   # Multimodal image Q&A
+│   │   ├── promptDrafts.ts # Reply draft generation
+│   │   └── summarizer.ts   # Thread summarization
+│   └── parse/              # File parsing modules
+│       ├── __tests__/      # Parser tests
+│       ├── docx.ts         # DOCX parsing
+│       ├── image.ts        # Image processing
+│       ├── index.ts        # Main parser
+│       ├── pdf.ts          # PDF parsing
+│       ├── utils.ts        # Utility functions
+│       └── xlsx.ts         # Spreadsheet parsing
+├── test/                   # Test utilities and mocks
+└── types/                  # TypeScript type definitions
+    └── attachment.ts       # Attachment-related types
 ```
 
 ## Contributing
