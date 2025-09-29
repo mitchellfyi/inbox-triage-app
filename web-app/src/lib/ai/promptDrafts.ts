@@ -4,7 +4,8 @@
  */
 
 import { makeHybridDecision, callHybridFallback } from './hybrid';
-import type { ProcessingMode } from '../../types/preferences';
+import { draftRemote } from './remote';
+import type { ProcessingMode, CustomModelKey } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in LanguageModel API
 declare global {
@@ -52,6 +53,8 @@ export type DraftTone = 'neutral' | 'friendly' | 'assertive' | 'formal';
 export interface DraftResult {
   drafts: Draft[];
   usedHybrid: boolean;
+  usedCustomKey?: boolean;
+  provider?: string;
   reason?: string;
 }
 
@@ -180,17 +183,36 @@ Each reply must include:
  * @param tone The tone style for the replies
  * @param guidance Additional user instructions
  * @param processingMode User's processing mode preference
+ * @param customKey Optional custom model key for external providers
  * @returns Promise resolving to a DraftResult with 3 reply drafts
  */
 export async function generateDrafts(
   text: string, 
   tone: DraftTone = 'neutral', 
   guidance: string = '',
-  processingMode: ProcessingMode = 'on-device'
+  processingMode: ProcessingMode = 'on-device',
+  customKey?: CustomModelKey
 ): Promise<DraftResult> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createPromptError(new Error('Empty input'), 'generate drafts');
+  }
+
+  // Check if we should use custom key
+  if (customKey && customKey.enabled) {
+    try {
+      const result = await draftRemote(text, customKey, tone, guidance);
+      return {
+        drafts: result.drafts,
+        usedHybrid: false,
+        usedCustomKey: true,
+        provider: customKey.provider,
+        reason: `Used custom ${customKey.provider} key: ${customKey.name}`
+      };
+    } catch (error) {
+      console.error('Custom key draft generation failed:', error);
+      // Fall through to regular processing
+    }
   }
 
   // Make hybrid decision
@@ -276,6 +298,7 @@ export async function generateDrafts(
       return {
         drafts,
         usedHybrid: false,
+        usedCustomKey: false,
         reason: decision.reason
       };
     } finally {

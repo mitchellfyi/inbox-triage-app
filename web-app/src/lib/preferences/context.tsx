@@ -12,6 +12,7 @@ import {
   PreferencesContextActions, 
   PreferencesContext as PreferencesContextType,
   CustomInstruction,
+  CustomModelKey,
   UserPreferences,
   DEFAULT_PREFERENCES_DATA
 } from '../../types/preferences';
@@ -33,6 +34,10 @@ type PreferencesAction =
   | { type: 'ADD_INSTRUCTION'; payload: CustomInstruction }
   | { type: 'UPDATE_INSTRUCTION'; payload: { id: string; updates: Partial<CustomInstruction> } }
   | { type: 'DELETE_INSTRUCTION'; payload: string }
+  | { type: 'ADD_MODEL_KEY'; payload: CustomModelKey }
+  | { type: 'UPDATE_MODEL_KEY'; payload: { id: string; updates: Partial<CustomModelKey> } }
+  | { type: 'DELETE_MODEL_KEY'; payload: string }
+  | { type: 'SELECT_MODEL_KEY'; payload: string | null }
   | { type: 'SET_UNSAVED_CHANGES'; payload: boolean };
 
 // Initial state
@@ -48,6 +53,13 @@ const initialState: PreferencesContextState = {
  */
 function generateInstructionId(): string {
   return `instr_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
+ * Generate a unique ID for custom model keys
+ */
+function generateModelKeyId(): string {
+  return `key_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /**
@@ -157,6 +169,89 @@ function preferencesReducer(state: PreferencesContextState, action: PreferencesA
         error: null
       };
 
+    case 'ADD_MODEL_KEY':
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          preferences: {
+            ...state.data.preferences,
+            customModelSettings: {
+              ...state.data.preferences.customModelSettings,
+              keys: [
+                ...state.data.preferences.customModelSettings.keys,
+                action.payload
+              ]
+            },
+            updatedAt: Date.now()
+          }
+        },
+        hasUnsavedChanges: true,
+        error: null
+      };
+
+    case 'UPDATE_MODEL_KEY':
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          preferences: {
+            ...state.data.preferences,
+            customModelSettings: {
+              ...state.data.preferences.customModelSettings,
+              keys: state.data.preferences.customModelSettings.keys.map(key =>
+                key.id === action.payload.id 
+                  ? { ...key, ...action.payload.updates, updatedAt: Date.now() }
+                  : key
+              )
+            },
+            updatedAt: Date.now()
+          }
+        },
+        hasUnsavedChanges: true,
+        error: null
+      };
+
+    case 'DELETE_MODEL_KEY':
+      const isSelectedKey = state.data.preferences.customModelSettings.selectedKeyId === action.payload;
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          preferences: {
+            ...state.data.preferences,
+            customModelSettings: {
+              ...state.data.preferences.customModelSettings,
+              keys: state.data.preferences.customModelSettings.keys.filter(
+                key => key.id !== action.payload
+              ),
+              selectedKeyId: isSelectedKey ? null : state.data.preferences.customModelSettings.selectedKeyId
+            },
+            updatedAt: Date.now()
+          }
+        },
+        hasUnsavedChanges: true,
+        error: null
+      };
+
+    case 'SELECT_MODEL_KEY':
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          preferences: {
+            ...state.data.preferences,
+            customModelSettings: {
+              ...state.data.preferences.customModelSettings,
+              selectedKeyId: action.payload
+            },
+            updatedAt: Date.now()
+          }
+        },
+        hasUnsavedChanges: true,
+        error: null
+      };
+
     case 'SET_UNSAVED_CHANGES':
       return {
         ...state,
@@ -253,6 +348,33 @@ export function PreferencesProvider({ children }: PreferencesProviderProps) {
 
     toggleInstruction: (id: string, enabled: boolean) => {
       dispatch({ type: 'UPDATE_INSTRUCTION', payload: { id, updates: { enabled } } });
+    },
+
+    addModelKey: (key: Omit<CustomModelKey, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const newKey: CustomModelKey = {
+        ...key,
+        id: generateModelKeyId(),
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      
+      dispatch({ type: 'ADD_MODEL_KEY', payload: newKey });
+    },
+
+    updateModelKey: (id: string, updates: Partial<CustomModelKey>) => {
+      dispatch({ type: 'UPDATE_MODEL_KEY', payload: { id, updates } });
+    },
+
+    deleteModelKey: (id: string) => {
+      dispatch({ type: 'DELETE_MODEL_KEY', payload: id });
+    },
+
+    toggleModelKey: (id: string, enabled: boolean) => {
+      dispatch({ type: 'UPDATE_MODEL_KEY', payload: { id, updates: { enabled } } });
+    },
+
+    selectModelKey: (id: string | null) => {
+      dispatch({ type: 'SELECT_MODEL_KEY', payload: id });
     },
 
     exportData: async (): Promise<string> => {

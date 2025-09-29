@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 // Note: Gmail OAuth import will be added when client-side auth is implemented
-import type { WebhookSubscription } from '../../../../types/webhooks';
+import type { WebhookSubscription } from '../../../../../types/webhooks';
 
 /**
  * Gmail webhook subscription management

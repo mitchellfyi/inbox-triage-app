@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import WebhookSettings from '../../components/WebhookSettings';
 import CustomInstructionsManager from '../../components/CustomInstructionsManager';
+import CustomModelKeyManager from '../../components/CustomModelKeyManager';
 import { usePreferences } from '../../lib/preferences/context';
 import { getPreferencesSummary } from '../../lib/preferences/utils';
 
@@ -32,6 +33,15 @@ export default function SettingsPage() {
 
   const handleCloudSyncToggle = (enabled: boolean) => {
     preferences.updatePreferences({ cloudSyncEnabled: enabled });
+  };
+
+  const handleCustomModelToggle = (enabled: boolean) => {
+    preferences.updatePreferences({
+      customModelSettings: {
+        ...currentPrefs.customModelSettings,
+        enabled
+      }
+    });
   };
 
   const handleResetPreferences = async () => {
@@ -219,6 +229,19 @@ export default function SettingsPage() {
               </span>
             </div>
           </div>
+
+          {/* Custom Model Keys */}
+          <CustomModelKeyManager
+            keys={currentPrefs.customModelSettings.keys}
+            selectedKeyId={currentPrefs.customModelSettings.selectedKeyId}
+            enabled={currentPrefs.customModelSettings.enabled}
+            maxKeys={currentPrefs.customModelSettings.maxKeys}
+            onAdd={preferences.addModelKey}
+            onUpdate={preferences.updateModelKey}
+            onDelete={preferences.deleteModelKey}
+            onSelect={preferences.selectModelKey}
+            onToggleEnabled={handleCustomModelToggle}
+          />
 
           {/* Custom Instructions */}
           <CustomInstructionsManager

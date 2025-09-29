@@ -6,6 +6,7 @@
 export type ProcessingMode = 'on-device' | 'hybrid';
 export type DraftTone = 'neutral' | 'friendly' | 'assertive' | 'formal';
 export type Language = 'en-GB' | 'en-US'; // British English default
+export type ModelProvider = 'gemini' | 'openai' | 'anthropic';
 
 export interface CustomInstruction {
   id: string;
@@ -23,6 +24,23 @@ export interface AccessibilityPreferences {
   fontSize: 'small' | 'medium' | 'large';
 }
 
+export interface CustomModelKey {
+  id: string;
+  name: string;
+  provider: ModelProvider;
+  apiKey: string;
+  enabled: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface CustomModelSettings {
+  enabled: boolean;
+  selectedKeyId: string | null;
+  keys: CustomModelKey[];
+  maxKeys: number;
+}
+
 export interface UserPreferences {
   // Core AI processing preferences
   processingMode: ProcessingMode;
@@ -32,6 +50,9 @@ export interface UserPreferences {
   // Default content
   defaultGuidance: string;
   signature: string;
+  
+  // Custom model API keys
+  customModelSettings: CustomModelSettings;
   
   // Accessibility
   accessibility: AccessibilityPreferences;
@@ -74,6 +95,13 @@ export interface PreferencesContextActions {
   deleteInstruction: (id: string) => void;
   toggleInstruction: (id: string, enabled: boolean) => void;
   
+  // Custom model key management
+  addModelKey: (key: Omit<CustomModelKey, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateModelKey: (id: string, updates: Partial<CustomModelKey>) => void;
+  deleteModelKey: (id: string) => void;
+  toggleModelKey: (id: string, enabled: boolean) => void;
+  selectModelKey: (id: string | null) => void;
+  
   // Data management
   exportData: () => Promise<string>;
   importData: (jsonData: string) => Promise<void>;
@@ -87,12 +115,20 @@ export interface PreferencesContextActions {
 export type PreferencesContext = PreferencesContextState & PreferencesContextActions;
 
 // Default values
+export const DEFAULT_CUSTOM_MODEL_SETTINGS: CustomModelSettings = {
+  enabled: false,
+  selectedKeyId: null,
+  keys: [],
+  maxKeys: 5
+};
+
 export const DEFAULT_PREFERENCES: UserPreferences = {
   processingMode: 'on-device',
   defaultTone: 'neutral',
   defaultLanguage: 'en-GB',
   defaultGuidance: '',
   signature: '',
+  customModelSettings: DEFAULT_CUSTOM_MODEL_SETTINGS,
   accessibility: {
     highContrast: false,
     reducedMotion: false,

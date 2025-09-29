@@ -34,6 +34,11 @@ export async function generateDraftsWithPreferences(
     customInstructions
   );
   
+  // Get the selected custom model key if enabled
+  const customKey = preferences.customModelSettings.enabled && preferences.customModelSettings.selectedKeyId
+    ? preferences.customModelSettings.keys.find(k => k.id === preferences.customModelSettings.selectedKeyId)
+    : undefined;
+  
   // Use the base generation function with enhanced parameters and processing mode
-  return baseGenerateDrafts(text, effectiveTone, enhancedGuidance, preferences.processingMode);
+  return baseGenerateDrafts(text, effectiveTone, enhancedGuidance, preferences.processingMode, customKey);
 }

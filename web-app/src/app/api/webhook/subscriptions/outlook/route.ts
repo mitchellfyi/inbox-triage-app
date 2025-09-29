@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { WebhookSubscription } from '../../../../types/webhooks';
+import type { WebhookSubscription } from '../../../../../types/webhooks';
 
 /**
  * Outlook webhook subscription management
