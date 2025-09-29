@@ -54,19 +54,25 @@ export default function Home() {
       }
 
       const processingMode = preferences.data.preferences.processingMode;
+      const customModelSettings = preferences.data.preferences.customModelSettings;
+      
+      // Get the selected custom model key if enabled
+      const customKey = customModelSettings.enabled && customModelSettings.selectedKeyId
+        ? customModelSettings.keys.find(k => k.id === customModelSettings.selectedKeyId)
+        : undefined;
 
       // Generate TL;DR and key points concurrently
       const [tldrResult, keyPointsResult] = await Promise.all([
-        getTlDr(text, processingMode),
-        getKeyPoints(text, processingMode)
+        getTlDr(text, processingMode, customKey),
+        getKeyPoints(text, processingMode, customKey)
       ]);
 
       setTldr(tldrResult.content);
       setKeyPoints(keyPointsResult.keyPoints);
       
       // Show privacy notification if any hybrid processing was used
-      if (tldrResult.usedHybrid || keyPointsResult.usedHybrid) {
-        const reason = tldrResult.usedHybrid ? tldrResult.reason : keyPointsResult.reason;
+      if (tldrResult.usedHybrid || keyPointsResult.usedHybrid || tldrResult.usedCustomKey || keyPointsResult.usedCustomKey) {
+        const reason = tldrResult.reason || keyPointsResult.reason;
         if (reason) {
           setHybridNotification({ show: true, reason });
         }
@@ -80,7 +86,7 @@ export default function Home() {
       setIsLoading(false);
       setIsDownloading(false);
     }
-  }, [preferences.data.preferences.processingMode]);
+  }, [preferences.data.preferences.processingMode, preferences.data.preferences.customModelSettings]);
 
   // Check AI model availability on component mount and handle imported content
   useEffect(() => {

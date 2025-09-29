@@ -4,7 +4,8 @@
  */
 
 import { makeHybridDecision, callHybridFallback } from './hybrid';
-import type { ProcessingMode } from '../../types/preferences';
+import { summariseRemote } from './remote';
+import type { ProcessingMode, CustomModelKey } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in AI Summarizer API
 declare global {
@@ -43,6 +44,8 @@ export interface SummariserError extends Error {
 export interface SummariserResult {
   content: string;
   usedHybrid: boolean;
+  usedCustomKey?: boolean;
+  provider?: string;
   reason?: string;
 }
 
@@ -95,15 +98,34 @@ function createSummariserError(originalError: unknown, operation: string): Summa
  * Generate a TL;DR summary for the given text with hybrid fallback support
  * @param text The email thread or text content to summarise
  * @param processingMode User's processing mode preference
+ * @param customKey Optional custom model key for external providers
  * @returns Promise resolving to a SummariserResult with TL;DR summary
  */
 export async function getTlDr(
   text: string, 
-  processingMode: ProcessingMode = 'on-device'
+  processingMode: ProcessingMode = 'on-device',
+  customKey?: CustomModelKey
 ): Promise<SummariserResult> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createSummariserError(new Error('Empty input'), 'generate TL;DR');
+  }
+
+  // Check if we should use custom key
+  if (customKey && customKey.enabled) {
+    try {
+      const result = await summariseRemote(text, customKey);
+      return {
+        content: result.tldr,
+        usedHybrid: false,
+        usedCustomKey: true,
+        provider: customKey.provider,
+        reason: `Used custom ${customKey.provider} key: ${customKey.name}`
+      };
+    } catch (error) {
+      console.error('Custom key summarisation failed:', error);
+      // Fall through to regular processing
+    }
   }
 
   // Make hybrid decision
@@ -157,6 +179,7 @@ export async function getTlDr(
       return {
         content: summary.trim(),
         usedHybrid: false,
+        usedCustomKey: false,
         reason: decision.reason
       };
     } finally {
@@ -172,15 +195,35 @@ export async function getTlDr(
  * Extract key points from the given text with hybrid fallback support
  * @param text The email thread or text content to analyse  
  * @param processingMode User's processing mode preference
+ * @param customKey Optional custom model key for external providers
  * @returns Promise resolving to a SummariserResult with key points array
  */
 export async function getKeyPoints(
   text: string, 
-  processingMode: ProcessingMode = 'on-device'
+  processingMode: ProcessingMode = 'on-device',
+  customKey?: CustomModelKey
 ): Promise<SummariserResult & { keyPoints: string[] }> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createSummariserError(new Error('Empty input'), 'extract key points');
+  }
+
+  // Check if we should use custom key
+  if (customKey && customKey.enabled) {
+    try {
+      const result = await summariseRemote(text, customKey);
+      return {
+        content: result.keyPoints.join('\n'),
+        keyPoints: result.keyPoints,
+        usedHybrid: false,
+        usedCustomKey: true,
+        provider: customKey.provider,
+        reason: `Used custom ${customKey.provider} key: ${customKey.name}`
+      };
+    } catch (error) {
+      console.error('Custom key key points failed:', error);
+      // Fall through to regular processing
+    }
   }
 
   // Make hybrid decision
@@ -246,6 +289,7 @@ export async function getKeyPoints(
         content: points.join('\n'),
         keyPoints: points,
         usedHybrid: false,
+        usedCustomKey: false,
         reason: decision.reason
       };
     } finally {

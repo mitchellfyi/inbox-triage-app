@@ -2,6 +2,32 @@
  * Type definitions for webhook integration
  */
 
+export enum WebhookConnectionStatus {
+  CONNECTED = 'connected',
+  CONNECTING = 'connecting',
+  DISCONNECTED = 'disconnected', 
+  ERROR = 'error'
+}
+
+export interface WebhookSubscription {
+  id: string;
+  provider: 'gmail' | 'outlook';
+  userId: string;
+  isActive: boolean;
+  createdAt: Date;
+  expiresAt?: Date;
+  topicName?: string; // For Gmail
+  resourceUrl?: string; // For Outlook  
+  subscriptionId?: string; // For Outlook
+}
+
+export interface WebhookState {
+  status: WebhookConnectionStatus;
+  lastEventTime?: number;
+  eventCount: number;
+  error?: string;
+}
+
 export interface WebhookEvent {
   provider: 'gmail' | 'outlook';
   messageId: string;

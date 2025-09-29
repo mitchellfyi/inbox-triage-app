@@ -7,7 +7,7 @@
 
 import type { 
   WebhookEvent, 
-  WebhookServiceState
+  WebhookState
 } from '../../types/webhooks';
 import { WebhookConnectionStatus } from '../../types/webhooks';
 
@@ -24,7 +24,7 @@ export class WebhookService {
   private pollingInterval: NodeJS.Timeout | null = null;
   private eventListeners: WebhookEventListener[] = [];
   private statusListeners: WebhookStatusListener[] = [];
-  private state: WebhookServiceState;
+  private state: WebhookState;
   private useSSE: boolean = true;
   private lastEventId: string | null = null;
 
