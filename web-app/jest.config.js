@@ -11,6 +11,10 @@ const customJestConfig = {
   moduleNameMapper: {
     // Handle module aliases (this will be automatically configured for you based on your tsconfig.json paths)
     '^@/(.*)$': '<rootDir>/src/$1',
+    // Mock pdfjs-dist to avoid ES module issues
+    '^pdfjs-dist$': '<rootDir>/src/test/__mocks__/pdfjs-dist.ts',
+    '^mammoth$': '<rootDir>/src/test/__mocks__/mammoth.ts',
+    '^xlsx$': '<rootDir>/src/test/__mocks__/xlsx.ts',
   },
   testEnvironment: 'jest-environment-jsdom',
   testPathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/node_modules/'],
@@ -18,6 +22,9 @@ const customJestConfig = {
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
+  ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(pdfjs-dist|mammoth|xlsx)/)',
   ],
 };
 
