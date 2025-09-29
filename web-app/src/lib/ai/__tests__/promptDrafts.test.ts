@@ -48,16 +48,14 @@ describe('checkPromptAvailability', () => {
   });
 
   it('returns unavailable when API is not present', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = undefined;
+    delete (global as any).LanguageModel;
     
     const result = await checkPromptAvailability();
     
     expect(result).toBe(PromptAvailability.UNAVAILABLE);
     
     // Restore for other tests
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = mockAI;
+    (global as any).LanguageModel = mockLanguageModel;
   });
 
   it('returns unavailable on error', async () => {

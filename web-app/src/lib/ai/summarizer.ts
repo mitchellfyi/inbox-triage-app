@@ -49,7 +49,7 @@ export interface SummariserResult {
  */
 export async function checkSummariserAvailability(): Promise<SummariserAvailability> {
   try {
-    if (typeof Summarizer === 'undefined') {
+    if (!('Summarizer' in self)) {
       return SummariserAvailability.UNAVAILABLE;
     }
 
@@ -156,7 +156,7 @@ export async function getTlDr(
 
   // Use local processing
   try {
-    if (typeof Summarizer === 'undefined') {
+    if (!('Summarizer' in self)) {
       throw new Error('Summarizer API not available');
     }
 
@@ -256,7 +256,7 @@ export async function getKeyPoints(
 
   // Use local processing
   try {
-    if (typeof Summarizer === 'undefined') {
+    if (!('Summarizer' in self)) {
       throw new Error('Summarizer API not available');
     }
 

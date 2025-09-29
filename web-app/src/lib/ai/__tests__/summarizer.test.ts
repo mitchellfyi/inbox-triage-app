@@ -30,7 +30,7 @@ beforeEach(() => {
 
 describe('checkSummariserAvailability', () => {
   it('returns readily available when API is ready', async () => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
     
     const result = await checkSummariserAvailability();
     
@@ -38,7 +38,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('after-download');
+    mockSummarizerGlobal.availability.mockResolvedValue('after-download');
     
     const result = await checkSummariserAvailability();
     
@@ -46,7 +46,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not supported', async () => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     const result = await checkSummariserAvailability();
     
@@ -54,20 +54,18 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not present', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = undefined;
+    delete (global as any).Summarizer;
     
     const result = await checkSummariserAvailability();
     
     expect(result).toBe(SummariserAvailability.UNAVAILABLE);
     
     // Restore for other tests
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = mockAI;
+    (global as any).Summarizer = mockSummarizerGlobal;
   });
 
   it('returns unavailable on error', async () => {
-    mockSummarizerGlobal.capabilities.mockRejectedValue(new Error('Network error'));
+    mockSummarizerGlobal.availability.mockRejectedValue(new Error('Network error'));
     
     const result = await checkSummariserAvailability();
     
@@ -77,7 +75,7 @@ describe('checkSummariserAvailability', () => {
 
 describe('getTlDr', () => {
   beforeEach(() => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
     mockSummarizer.summarize.mockResolvedValue('This is a test summary');
   });
 
@@ -113,7 +111,7 @@ describe('getTlDr', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     await expect(getTlDr('test text')).rejects.toThrow();
   });
@@ -159,7 +157,7 @@ describe('getTlDr', () => {
 
 describe('getKeyPoints', () => {
   beforeEach(() => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
   });
 
   it('extracts key points successfully', async () => {
@@ -232,7 +230,7 @@ describe('getKeyPoints', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     await expect(getKeyPoints('test text')).rejects.toThrow();
   });

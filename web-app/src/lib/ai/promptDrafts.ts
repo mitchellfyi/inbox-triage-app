@@ -101,7 +101,7 @@ const DRAFT_RESPONSE_SCHEMA = JSON.stringify({
  */
 export async function checkPromptAvailability(): Promise<PromptAvailability> {
   try {
-    if (typeof LanguageModel === 'undefined') {
+    if (!('LanguageModel' in self)) {
       return PromptAvailability.UNAVAILABLE;
     }
 
@@ -260,7 +260,7 @@ export async function generateDrafts(
 
   // Use local processing
   try {
-    if (typeof LanguageModel === 'undefined') {
+    if (!('LanguageModel' in self)) {
       throw new Error('LanguageModel API not available');
     }
 
