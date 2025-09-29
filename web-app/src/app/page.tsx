@@ -6,16 +6,20 @@ import ThreadSummary from '../components/ThreadSummary';
 import ReplyDrafts from '../components/ReplyDrafts';
 import AttachmentSection from '../components/AttachmentSection';
 import ImageQA from '../components/ImageQA';
+import PrivacyNotification from '../components/PrivacyNotification';
 import { 
   getTlDr, 
   getKeyPoints, 
   checkSummariserAvailability, 
   SummariserAvailability,
-  type SummariserError 
+  type SummariserError
 } from '../lib/ai/summarizer';
+import { usePreferences } from '../lib/preferences/context';
 import type { ParsedAttachment } from '../types/attachment';
 
 export default function Home() {
+  const preferences = usePreferences();
+  
   const [tldr, setTldr] = useState<string>();
   const [keyPoints, setKeyPoints] = useState<string[]>();
   const [threadContent, setThreadContent] = useState<string>();
@@ -24,15 +28,20 @@ export default function Home() {
   const [availability, setAvailability] = useState<SummariserAvailability>();
   const [isDownloading, setIsDownloading] = useState(false);
   const [attachments, setAttachments] = useState<ParsedAttachment[]>([]);
+  const [hybridNotification, setHybridNotification] = useState<{ show: boolean; reason: string }>({ 
+    show: false, 
+    reason: '' 
+  });
 
   const handleTextSubmit = useCallback(async (text: string) => {
     // Store the thread content for draft generation
     setThreadContent(text);
     
-    // Clear previous results and errors
+    // Clear previous results and errors 
     setTldr(undefined);
     setKeyPoints(undefined);
     setError(undefined);
+    setHybridNotification({ show: false, reason: '' });
     setIsLoading(true);
 
     try {
@@ -44,14 +53,24 @@ export default function Home() {
         setIsDownloading(true);
       }
 
+      const processingMode = preferences.data.preferences.processingMode;
+
       // Generate TL;DR and key points concurrently
       const [tldrResult, keyPointsResult] = await Promise.all([
-        getTlDr(text),
-        getKeyPoints(text)
+        getTlDr(text, processingMode),
+        getKeyPoints(text, processingMode)
       ]);
 
       setTldr(tldrResult.content);
       setKeyPoints(keyPointsResult.keyPoints);
+      
+      // Show privacy notification if any hybrid processing was used
+      if (tldrResult.usedHybrid || keyPointsResult.usedHybrid) {
+        const reason = tldrResult.usedHybrid ? tldrResult.reason : keyPointsResult.reason;
+        if (reason) {
+          setHybridNotification({ show: true, reason });
+        }
+      }
     } catch (err) {
       console.error('Summarisation failed:', err);
       
@@ -61,7 +80,7 @@ export default function Home() {
       setIsLoading(false);
       setIsDownloading(false);
     }
-  }, []);
+  }, [preferences.data.preferences.processingMode]);
 
   // Check AI model availability on component mount and handle imported content
   useEffect(() => {
@@ -133,6 +152,15 @@ export default function Home() {
             onTextSubmit={handleTextSubmit}
             isLoading={isLoading || isDownloading}
           />
+
+          {/* Privacy Notification */}
+          {hybridNotification.show && (
+            <PrivacyNotification
+              reason={hybridNotification.reason}
+              onDismiss={() => setHybridNotification({ show: false, reason: '' })}
+              className="mb-6"
+            />
+          )}
 
           {/* Attachment Section */}
           <AttachmentSection

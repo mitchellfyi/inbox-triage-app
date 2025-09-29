@@ -35,9 +35,45 @@ jest.mock('../multimodal', () => ({
 // Mock fetch for API tests
 global.fetch = jest.fn();
 
-const { checkSummariserAvailability, SummariserAvailability } = require('../summarizer');
-const { checkPromptAvailability, PromptAvailability } = require('../promptDrafts');
-const { checkMultimodalAvailability, MultimodalAvailability } = require('../multimodal');
+const mockCheckSummariserAvailability = jest.fn();
+const mockCheckPromptAvailability = jest.fn();
+const mockCheckMultimodalAvailability = jest.fn();
+
+// Mocked enums
+const SummariserAvailability = {
+  READILY_AVAILABLE: 'readily',
+  AFTER_DOWNLOAD: 'after-download', 
+  UNAVAILABLE: 'no'
+} as const;
+
+const PromptAvailability = {
+  READILY_AVAILABLE: 'readily',
+  AFTER_DOWNLOAD: 'after-download',
+  UNAVAILABLE: 'no'
+} as const;
+
+const MultimodalAvailability = {
+  READILY_AVAILABLE: 'readily',
+  AFTER_DOWNLOAD: 'after-download',
+  UNAVAILABLE: 'no'
+} as const;
+
+// Set up the mocks
+jest.doMock('../summarizer', () => ({
+  SummariserAvailability,
+  checkSummariserAvailability: mockCheckSummariserAvailability
+}));
+
+jest.doMock('../promptDrafts', () => ({
+  PromptAvailability,
+  checkPromptAvailability: mockCheckPromptAvailability
+}));
+
+jest.doMock('../multimodal', () => ({
+  MultimodalAvailability,
+  checkMultimodalAvailability: mockCheckMultimodalAvailability
+}));
+
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
 describe('makeHybridDecision', () => {
@@ -47,7 +83,7 @@ describe('makeHybridDecision', () => {
 
   describe('on-device mode', () => {
     it('uses local processing when available and within limits', async () => {
-      checkSummariserAvailability.mockResolvedValue(SummariserAvailability.READILY_AVAILABLE);
+      mockCheckSummariserAvailability.mockResolvedValue(SummariserAvailability.READILY_AVAILABLE);
       
       const decision = await makeHybridDecision({
         processingMode: 'on-device',
@@ -63,7 +99,7 @@ describe('makeHybridDecision', () => {
     });
 
     it('rejects when model unavailable in on-device mode', async () => {
-      checkSummariserAvailability.mockResolvedValue(SummariserAvailability.UNAVAILABLE);
+      mockCheckSummariserAvailability.mockResolvedValue(SummariserAvailability.UNAVAILABLE);
       
       const decision = await makeHybridDecision({
         processingMode: 'on-device',
@@ -79,7 +115,7 @@ describe('makeHybridDecision', () => {
     });
 
     it('rejects when content exceeds token limits in on-device mode', async () => {
-      checkSummariserAvailability.mockResolvedValue(SummariserAvailability.READILY_AVAILABLE);
+      mockCheckSummariserAvailability.mockResolvedValue(SummariserAvailability.READILY_AVAILABLE);
       
       // Create text that exceeds the SUMMARIZER limit of 4000 chars
       const longText = 'a'.repeat(5000);
@@ -98,7 +134,7 @@ describe('makeHybridDecision', () => {
 
   describe('hybrid mode', () => {
     it('uses local processing when available and within limits', async () => {
-      checkPromptAvailability.mockResolvedValue(PromptAvailability.READILY_AVAILABLE);
+      mockCheckPromptAvailability.mockResolvedValue(PromptAvailability.READILY_AVAILABLE);
       
       const decision = await makeHybridDecision({
         processingMode: 'hybrid',
@@ -114,7 +150,7 @@ describe('makeHybridDecision', () => {
     });
 
     it('falls back to cloud when model unavailable', async () => {
-      checkPromptAvailability.mockResolvedValue(PromptAvailability.UNAVAILABLE);
+      mockCheckPromptAvailability.mockResolvedValue(PromptAvailability.UNAVAILABLE);
       
       const decision = await makeHybridDecision({
         processingMode: 'hybrid',
@@ -128,7 +164,7 @@ describe('makeHybridDecision', () => {
     });
 
     it('falls back to cloud when content exceeds limits', async () => {
-      checkMultimodalAvailability.mockResolvedValue(MultimodalAvailability.READILY_AVAILABLE);
+      mockCheckMultimodalAvailability.mockResolvedValue(MultimodalAvailability.READILY_AVAILABLE);
       
       // Create text that exceeds the MULTIMODAL limit of 6000 chars
       const longText = 'a'.repeat(7000);
@@ -145,7 +181,7 @@ describe('makeHybridDecision', () => {
     });
 
     it('falls back to cloud when both model unavailable and content too large', async () => {
-      checkSummariserAvailability.mockResolvedValue(SummariserAvailability.UNAVAILABLE);
+      mockCheckSummariserAvailability.mockResolvedValue(SummariserAvailability.UNAVAILABLE);
       
       const longText = 'a'.repeat(5000);
       
@@ -163,7 +199,7 @@ describe('makeHybridDecision', () => {
 
   describe('error handling', () => {
     it('handles availability check errors gracefully', async () => {
-      checkSummariserAvailability.mockRejectedValue(new Error('Network error'));
+      mockCheckSummariserAvailability.mockRejectedValue(new Error('Network error'));
       
       const decision = await makeHybridDecision({
         processingMode: 'hybrid',

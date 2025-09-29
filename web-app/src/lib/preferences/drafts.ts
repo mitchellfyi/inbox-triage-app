@@ -7,7 +7,7 @@ import { UserPreferences, CustomInstruction } from '../../types/preferences';
 import { 
   generateDrafts as baseGenerateDrafts, 
   DraftTone, 
-  Draft 
+  DraftResult 
 } from '../ai/promptDrafts';
 import { buildEnhancedPrompt } from './utils';
 
@@ -23,7 +23,7 @@ export async function generateDraftsWithPreferences(
     preferences: UserPreferences;
     customInstructions: CustomInstruction[];
   }
-): Promise<Draft[]> {
+): Promise<DraftResult> {
   const { tone = 'neutral', guidance = '', preferences, customInstructions } = options;
   
   // Build enhanced prompt with preferences
@@ -34,6 +34,6 @@ export async function generateDraftsWithPreferences(
     customInstructions
   );
   
-  // Use the base generation function with enhanced parameters
-  return baseGenerateDrafts(text, effectiveTone, enhancedGuidance);
+  // Use the base generation function with enhanced parameters and processing mode
+  return baseGenerateDrafts(text, effectiveTone, enhancedGuidance, preferences.processingMode);
 }
