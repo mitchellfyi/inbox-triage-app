@@ -96,15 +96,20 @@ Configure the environment variables as needed for OAuth, webhooks, and hybrid se
 - ✅ Client-side attachment parsing (PDF.js, mammoth.js, SheetJS)
 - ✅ Image Q&A component with drag-and-drop upload
 - ✅ Error handling and availability checks for AI models
-- ✅ Comprehensive unit tests (93 tests passing)
+- ✅ **Real-time webhook integration for Gmail and Outlook**
+  - Gmail Pub/Sub webhook processing
+  - Outlook Graph subscription webhooks
+  - Server-Sent Events (SSE) for real-time notifications
+  - Webhook settings UI with toggle controls
+  - Event storage and retrieval API
+- ✅ Comprehensive unit tests (140 tests passing)
 
 ## Features Planned
 
 These features will be implemented in future iterations:
 
-- [ ] Gmail/Outlook OAuth authentication  
-- [ ] Webhook implementations
-- [ ] User preferences persistence
+- [ ] Gmail/Outlook OAuth authentication integration
+- [ ] User preferences persistence (IndexedDB)
 - [ ] Hybrid fallback logic
 - [ ] Voice guidance (Web Speech API)
 - [ ] Screenshot capture functionality
@@ -132,24 +137,39 @@ src/
 │   ├── ImageQA.tsx         # Image Q&A component
 │   ├── Navigation.tsx
 │   ├── ReplyDrafts.tsx
-│   └── ThreadSummary.tsx
+│   ├── ThreadSummary.tsx
+│   ├── WebhookNotificationBadge.tsx  # Real-time notification badge
+│   └── WebhookSettings.tsx  # Webhook configuration UI
 ├── lib/                    # Business logic modules
 │   ├── ai/                 # AI integration modules
 │   │   ├── __tests__/      # AI module tests
 │   │   ├── multimodal.ts   # Multimodal image Q&A
 │   │   ├── promptDrafts.ts # Reply draft generation
 │   │   └── summarizer.ts   # Thread summarization
-│   └── parse/              # File parsing modules
-│       ├── __tests__/      # Parser tests
-│       ├── docx.ts         # DOCX parsing
-│       ├── image.ts        # Image processing
-│       ├── index.ts        # Main parser
-│       ├── pdf.ts          # PDF parsing
-│       ├── utils.ts        # Utility functions
-│       └── xlsx.ts         # Spreadsheet parsing
+│   ├── auth/               # Authentication modules
+│   │   ├── gmail-oauth.ts  # Gmail OAuth PKCE flow
+│   │   └── outlook-oauth.ts # Outlook OAuth with MSAL
+│   ├── gmail/              # Gmail API integration
+│   │   └── api.ts         # Gmail API service
+│   ├── outlook/            # Outlook API integration
+│   │   └── api.ts         # Outlook Graph API service
+│   ├── parse/              # File parsing modules
+│   │   ├── __tests__/      # Parser tests
+│   │   ├── docx.ts         # DOCX parsing
+│   │   ├── image.ts        # Image processing
+│   │   ├── index.ts        # Main parser
+│   │   ├── pdf.ts          # PDF parsing
+│   │   ├── utils.ts        # Utility functions
+│   │   └── xlsx.ts         # Spreadsheet parsing
+│   └── webhooks/           # Real-time webhook services
+│       └── service.ts      # WebSocket/SSE service
 ├── test/                   # Test utilities and mocks
 └── types/                  # TypeScript type definitions
-    └── attachment.ts       # Attachment-related types
+    ├── attachment.ts       # Attachment-related types
+    ├── gmail.ts           # Gmail API types
+    ├── outlook.ts         # Outlook API types
+    ├── speech.ts          # Speech recognition types
+    └── webhooks.ts        # Webhook integration types
 ```
 
 ## Contributing
