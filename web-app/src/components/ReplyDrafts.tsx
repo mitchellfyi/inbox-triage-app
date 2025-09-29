@@ -2,6 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateDrafts, checkPromptAvailability, PromptAvailability, type Draft, type DraftTone, type PromptError } from '../lib/ai/promptDrafts';
+import GuidanceBar from './GuidanceBar';
 
 interface ReplyDraftsProps {
   /** The email thread content to generate replies for */
@@ -165,24 +166,12 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
         </div>
 
         {/* Guidance Input */}
-        <div>
-          <label htmlFor="guidance-input" className="block text-sm font-medium text-gray-700 mb-2">
-            Guidance
-          </label>
-          <textarea
-            id="guidance-input"
-            value={guidance}
-            onChange={(e) => setGuidance(e.target.value)}
-            placeholder="Enter additional instructions for the reply (e.g., ask a question, be concise, request a meeting)..."
-            rows={3}
-            maxLength={500}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-            disabled={isDraftLoading || isLoading}
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            {guidance.length}/500 characters
-          </p>
-        </div>
+        <GuidanceBar
+          value={guidance}
+          onChange={setGuidance}
+          disabled={isDraftLoading || isLoading}
+          maxLength={500}
+        />
       </div>
 
       {/* Error State */}

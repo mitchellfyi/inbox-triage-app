@@ -31,6 +31,28 @@ export default function ImageQA({ className = '' }: ImageQAProps) {
     checkMultimodalAvailability().then(setAvailability);
   }, []);
 
+  const handleImageFiles = useCallback((files: File[]) => {
+    const supportedFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    
+    files.forEach(file => {
+      if (!supportedFormats.includes(file.type.toLowerCase())) {
+        // Show error for unsupported format
+        return;
+      }
+
+      const imageUrl = URL.createObjectURL(file);
+      const newImageQuestion: ImageQuestion = {
+        id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        image: file,
+        imageUrl,
+        question: '',
+        isLoading: false,
+      };
+
+      setImageQuestions(prev => [...prev, newImageQuestion]);
+    });
+  }, []);
+
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -61,28 +83,6 @@ export default function ImageQA({ className = '' }: ImageQAProps) {
       handleImageFiles(imageFiles);
     }
   }, [handleImageFiles]);
-
-  const handleImageFiles = useCallback((files: File[]) => {
-    const supportedFormats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-    
-    files.forEach(file => {
-      if (!supportedFormats.includes(file.type.toLowerCase())) {
-        // Show error for unsupported format
-        return;
-      }
-
-      const imageUrl = URL.createObjectURL(file);
-      const newImageQuestion: ImageQuestion = {
-        id: `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        image: file,
-        imageUrl,
-        question: '',
-        isLoading: false,
-      };
-
-      setImageQuestions(prev => [...prev, newImageQuestion]);
-    });
-  }, []);
 
   const handleQuestionChange = useCallback((id: string, question: string) => {
     setImageQuestions(prev => 
