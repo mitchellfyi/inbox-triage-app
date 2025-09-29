@@ -65,9 +65,9 @@ For detailed architecture and components, see [SPEC.md](SPEC.md).
 
 - **Thread summarisation** – Paste or import an email thread and get a TL;DR plus key points.
 - **Attachment understanding** – Upload PDFs, DOCX, XLSX or images; the app parses and summarises them locally.
-- **Reply drafts with tone control** – Generate three reply drafts with custom tone and optional guidance.
+- **Reply drafts with tone control** – Generate three reply drafts with custom tone and voice dictation guidance.
 - **Multimodal Q&A** – Ask questions about images or screenshots using the Prompt API's multimodal capabilities.
-- **Voice guidance** – Dictate additional instructions via the Web Speech API.
+- **Voice guidance dictation** – Use the microphone to dictate additional instructions via the Web Speech API with full client-side processing.
 - **Email import & webhooks** – Sign in with Gmail or Outlook to fetch threads and attachments; optional server webhook to receive new messages.
 - **Hybrid fallback** – When the device can't process locally, fallback to a secure server using minimal derived text; you control whether this happens.
 

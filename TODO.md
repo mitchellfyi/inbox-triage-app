@@ -66,7 +66,7 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 - [x] **Reply draft generation** – Use Prompt API with JSON schema to produce three reply drafts with tone control. (Issue: #??)
 - [x] **Tone and style controls** – UI for selecting professional, friendly, formal, casual reply styles. (Issue: #??)
 - [x] **Custom guidance input** – Textarea for user instructions that get appended to reply generation prompts. (Issue: #??)
-- [ ] **Voice guidance via Speech API** – Web Speech API integration for dictating additional instructions. (Issue: #??)
+- [x] **Voice guidance via Speech API** – Web Speech API integration for dictating additional instructions with client-side processing, microphone button, visual feedback, and accessibility features. (Issue: #8)
 
 ## Side Panel UI
 
