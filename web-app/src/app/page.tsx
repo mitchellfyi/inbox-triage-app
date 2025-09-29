@@ -5,6 +5,7 @@ import EmailThreadInput from '../components/EmailThreadInput';
 import ThreadSummary from '../components/ThreadSummary';
 import ReplyDrafts from '../components/ReplyDrafts';
 import AttachmentSection from '../components/AttachmentSection';
+import ImageQA from '../components/ImageQA';
 import { 
   getTlDr, 
   getKeyPoints, 
@@ -110,6 +111,9 @@ export default function Home() {
             onAttachmentsChange={handleAttachmentsChange}
             className="mb-8"
           />
+
+          {/* Image Q&A Section */}
+          <ImageQA className="mb-8" />
 
           {/* Thread Summary */}
           <ThreadSummary

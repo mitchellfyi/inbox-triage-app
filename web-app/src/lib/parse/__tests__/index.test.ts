@@ -105,8 +105,8 @@ describe('parseAttachment', () => {
 
   it('handles parsing errors gracefully', async () => {
     // Mock PDF parser to throw error
-    const { parsePdf } = require('../pdf');
-    parsePdf.mockRejectedValueOnce(new Error('PDF parsing failed'));
+    const parseMock = await import('../pdf');
+    jest.mocked(parseMock.parsePdf).mockRejectedValueOnce(new Error('PDF parsing failed'));
 
     const file = new File(['pdf content'], 'test.pdf', { type: 'application/pdf' });
     const result = await parseAttachment(file);

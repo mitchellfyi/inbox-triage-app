@@ -43,9 +43,9 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 
 - [x] **Scaffold web app project structure** – Create `/web-app` folder with React + Next.js + TypeScript; set up basic routing and CI/CD for deployment. (Issue: #??)
 - [x] **Add ESLint, Prettier and unit test framework** – Ensure code quality and consistency across contributions. (Issue: #??)
-- [ ] **Integrate Chrome AI Task APIs** – Add Summarizer, Prompt, and Multimodal API detection and integration with availability checks. (Issue: #??)
-- [ ] **Build AI processing modules** – Create `src/lib/ai/` modules for summarizer, prompt, and multimodal processing with error handling. (Issue: #??)
-- [ ] **Add AI model availability checker** – UI component that checks and displays Chrome AI model status with download guidance. (Issue: #??)
+- [x] **Integrate Chrome AI Task APIs** – Add Summarizer, Prompt, and Multimodal API detection and integration with availability checks. (Issue: #??)
+- [x] **Build AI processing modules** – Create `src/lib/ai/` modules for summarizer, prompt, and multimodal processing with error handling. (Issue: #??)
+- [x] **Add AI model availability checker** – UI component that checks and displays Chrome AI model status with download guidance. (Issue: #??)
 
 ## Gmail Extraction
 
@@ -63,19 +63,19 @@ Project-wide task tracker for the **Inbox Triage App**. Each task includes a tit
 
 ## Drafting
 
-- [ ] **Reply draft generation** – Use Prompt API with JSON schema to produce three reply drafts with tone control. (Issue: #??)
-- [ ] **Tone and style controls** – UI for selecting professional, friendly, formal, casual reply styles. (Issue: #??)
-- [ ] **Custom guidance input** – Textarea for user instructions that get appended to reply generation prompts. (Issue: #??)
+- [x] **Reply draft generation** – Use Prompt API with JSON schema to produce three reply drafts with tone control. (Issue: #??)
+- [x] **Tone and style controls** – UI for selecting professional, friendly, formal, casual reply styles. (Issue: #??)
+- [x] **Custom guidance input** – Textarea for user instructions that get appended to reply generation prompts. (Issue: #??)
 - [ ] **Voice guidance via Speech API** – Web Speech API integration for dictating additional instructions. (Issue: #??)
 
 ## Side Panel UI
 
-- [ ] **Email thread input interface** – Text area and import buttons with validation and character count. (Issue: #??)
-- [ ] **Attachment upload and parsing** – Drag-and-drop file interface with PDF.js, mammoth.js, SheetJS integration. (Issue: #??)
-- [ ] **Multimodal image Q&A** – Image upload with question input for Prompt API multimodal processing. (Issue: #??)
-- [ ] **Results display components** – Clean, accessible presentation of summaries, key points, and reply drafts. (Issue: #??)
-- [ ] **Settings and preferences** – User configuration for default tone, hybrid mode, guidance text. (Issue: #??)
-- [ ] **Loading states and error handling** – Progressive feedback during AI processing and clear error messages. (Issue: #??)
+- [x] **Email thread input interface** – Text area and import buttons with validation and character count. (Issue: #??)
+- [x] **Attachment upload and parsing** – Drag-and-drop file interface with PDF.js, mammoth.js, SheetJS integration. (Issue: #??)
+- [x] **Multimodal image Q&A** – Image upload with question input for Prompt API multimodal processing. (Issue: #??)
+- [x] **Results display components** – Clean, accessible presentation of summaries, key points, and reply drafts. (Issue: #??)
+- [x] **Settings and preferences** – User configuration for default tone, hybrid mode, guidance text. (Issue: #??)
+- [x] **Loading states and error handling** – Progressive feedback during AI processing and clear error messages. (Issue: #??)
 
 ## QA
 
