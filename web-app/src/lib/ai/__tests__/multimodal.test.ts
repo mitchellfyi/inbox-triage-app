@@ -1,5 +1,5 @@
 /**
- * Unit tests for Chrome Prompt API multimodal wrapper
+ * Unit tests for Chrome Language Model API wrapper (multimodal fallback)
  */
 import { 
   askImageQuestion, 
@@ -8,22 +8,22 @@ import {
   MultimodalAvailability 
 } from '../multimodal';
 
-// Mock the Prompt API
-const mockPrompt = {
+// Mock the Language Model API
+const mockSession = {
   prompt: jest.fn(),
   destroy: jest.fn()
 };
 
 const mockAI = {
-  prompt: {
+  languageModel: {
     capabilities: jest.fn(),
-    create: jest.fn().mockResolvedValue(mockPrompt)
+    create: jest.fn().mockResolvedValue(mockSession)
   }
 };
 
 // Mock the summarizer module
 jest.mock('../summarizer', () => ({
-  getTlDr: jest.fn().mockResolvedValue('This is a summarised response.')
+  getTlDr: jest.fn().mockResolvedValue({ content: 'This is a summarised response.' })
 }));
 
 // Setup global mocks
@@ -40,16 +40,16 @@ beforeEach(() => {
 
 describe('checkMultimodalAvailability', () => {
   it('returns readily available when API is ready', async () => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'readily' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
     
     const result = await checkMultimodalAvailability();
     
     expect(result).toBe(MultimodalAvailability.READILY_AVAILABLE);
-    expect(mockAI.prompt.capabilities).toHaveBeenCalled();
+    expect(mockAI.languageModel.capabilities).toHaveBeenCalled();
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'after-download' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'after-download' });
     
     const result = await checkMultimodalAvailability();
     
@@ -57,7 +57,7 @@ describe('checkMultimodalAvailability', () => {
   });
 
   it('returns unavailable when API is not supported', async () => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'no' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'no' });
     
     const result = await checkMultimodalAvailability();
     
@@ -76,7 +76,7 @@ describe('checkMultimodalAvailability', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    mockAI.prompt.capabilities.mockRejectedValue(new Error('Network error'));
+    mockAI.languageModel.capabilities.mockRejectedValue(new Error('Network error'));
     
     const result = await checkMultimodalAvailability();
     
