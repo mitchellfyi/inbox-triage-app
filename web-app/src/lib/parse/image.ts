@@ -9,20 +9,18 @@ import { cleanText } from './utils';
 // Type definitions for Chrome's built-in AI Language Model API
 // Note: Direct image processing is experimental and not currently available
 declare global {
-  interface AI {
-    languageModel?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
-      }>;
-      create(options?: {
-        systemPrompt?: string;
-        temperature?: number;
-      }): Promise<{
-        prompt(input: string): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+  interface LanguageModel {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      systemPrompt?: string;
+      temperature?: number;
+    }): Promise<{
+      prompt(input: string): Promise<string>;
+      destroy(): void;
+    }>;
   }
+
+  var LanguageModel: LanguageModel;
 }
 
 const DEFAULT_OPTIONS: Required<ParseOptions> = {
@@ -40,12 +38,12 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
   const opts = { ...DEFAULT_OPTIONS, ...options };
   try {
     // Check if language model AI is available
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       throw new Error('Language model AI is not available on this device');
     }
     
-    const capabilities = await window.ai.languageModel.capabilities();
-    if (capabilities.available === 'no') {
+    const availability = await LanguageModel.availability();
+    if (availability === 'no') {
       throw new Error('Language model AI is not available on this device');
     }
     
@@ -55,7 +53,7 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
     }
     
     // Create language model session
-    const session = await window.ai.languageModel.create({
+    const session = await LanguageModel.create({
       systemPrompt: 'You are a helpful assistant that explains image analysis limitations to users.',
       temperature: 0.3
     });
@@ -74,8 +72,7 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
       return {
         text: cleanedDescription,
         metadata: {
-          imageDescription: cleanedDescription,
-          limitationNotice: 'Direct image analysis not currently supported by Chrome AI APIs'
+          imageDescription: cleanedDescription
         },
       };
     } finally {
@@ -98,12 +95,12 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
 export async function extractTextFromImage(file: File): Promise<ParsedContent> {
   try {
     // Check if language model AI is available
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       throw new Error('Language model AI is not available on this device');
     }
     
-    const capabilities = await window.ai.languageModel.capabilities();
-    if (capabilities.available === 'no') {
+    const availability = await LanguageModel.availability();
+    if (availability === 'no') {
       throw new Error('Language model AI is not available on this device');
     }
     
@@ -113,7 +110,7 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
     }
     
     // Create language model session
-    const session = await window.ai.languageModel.create({
+    const session = await LanguageModel.create({
       systemPrompt: 'You are a helpful assistant that explains OCR and text extraction limitations to users.',
       temperature: 0.3
     });
@@ -133,8 +130,7 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
       return {
         text: cleanedText,
         metadata: {
-          imageDescription: cleanedText,
-          limitationNotice: 'Direct image text extraction not currently supported by Chrome AI APIs'
+          imageDescription: cleanedText
         },
       };
     } finally {
@@ -152,12 +148,12 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
  */
 export async function isImageParsingSupported(): Promise<boolean> {
   try {
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       return false;
     }
     
-    const capabilities = await window.ai.languageModel.capabilities();
-    return capabilities.available !== 'no';
+    const availability = await LanguageModel.availability();
+    return availability !== 'no';
   } catch (error) {
     console.warn('Failed to check language model availability:', error);
     return false;

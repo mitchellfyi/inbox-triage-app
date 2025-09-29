@@ -9,27 +9,38 @@ import type { ProcessingMode, CustomModelKey } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in LanguageModel API
 declare global {
-  interface AI {
-    languageModel?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
+  interface LanguageModel {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      systemPrompt?: string;
+      initialPrompts?: Array<{
+        role: 'system' | 'user' | 'assistant';
+        content: string;
       }>;
-      create(options?: {
-        systemPrompt?: string;
-        initialPrompts?: Array<{
-          role: 'system' | 'user' | 'assistant';
-          content: string;
-        }>;
-        temperature?: number;
-        topK?: number;
-      }): Promise<{
-        prompt(input: string, options?: {
-          responseConstraint?: string;
-        }): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+      temperature?: number;
+      topK?: number;
+      signal?: AbortSignal;
+    }): Promise<{
+      prompt(input: string, options?: {
+        responseConstraint?: any;
+        signal?: AbortSignal;
+      }): Promise<string>;
+      promptStreaming(input: string, options?: {
+        responseConstraint?: any;
+        signal?: AbortSignal;
+      }): ReadableStream;
+      destroy(): void;
+      clone(options?: { signal?: AbortSignal }): Promise<LanguageModel>;
+    }>;
+    params(): Promise<{
+      defaultTopK: number;
+      maxTopK: number;
+      defaultTemperature: number;
+      maxTemperature: number;
+    }>;
   }
+
+  var LanguageModel: LanguageModel;
 }
 
 export enum PromptAvailability {
@@ -90,12 +101,12 @@ const DRAFT_RESPONSE_SCHEMA = JSON.stringify({
  */
 export async function checkPromptAvailability(): Promise<PromptAvailability> {
   try {
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       return PromptAvailability.UNAVAILABLE;
     }
 
-    const capabilities = await window.ai.languageModel.capabilities();
-    return capabilities.available as PromptAvailability;
+    const availability = await LanguageModel.availability();
+    return availability as PromptAvailability;
   } catch (error) {
     console.error('Error checking prompt availability:', error);
     return PromptAvailability.UNAVAILABLE;
@@ -249,16 +260,16 @@ export async function generateDrafts(
 
   // Use local processing
   try {
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       throw new Error('LanguageModel API not available');
     }
 
     const systemPrompt = buildSystemPrompt(tone, guidance);
     
-    const session = await window.ai.languageModel.create({
+    const session = await LanguageModel.create({
       systemPrompt,
       temperature: 0.7
-    });
+    }) as any;
 
     try {
       const response = await session.prompt(

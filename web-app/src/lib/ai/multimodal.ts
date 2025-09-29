@@ -6,25 +6,20 @@
 // Type definitions for Chrome's built-in AI Language Model API
 // Note: Multimodal capabilities are experimental and not currently available in stable Chrome
 declare global {
-  interface AI {
-    languageModel?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
-      }>;
-      create(options?: {
-        systemPrompt?: string;
-        temperature?: number;
-        topK?: number;
-      }): Promise<{
-        prompt(input: string): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+  interface LanguageModel {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      systemPrompt?: string;
+      temperature?: number;
+      topK?: number;
+      signal?: AbortSignal;
+    }): Promise<{
+      prompt(input: string): Promise<string>;
+      destroy(): void;
+    }>;
   }
-  
-  interface Window {
-    ai?: AI;
-  }
+
+  var LanguageModel: LanguageModel;
 }
 
 export enum MultimodalAvailability {
@@ -83,12 +78,12 @@ function createMultimodalError(error: Error, _operation: string): MultimodalErro
  */
 export async function checkMultimodalAvailability(): Promise<MultimodalAvailability> {
   try {
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       return MultimodalAvailability.UNAVAILABLE;
     }
 
-    const capabilities = await window.ai.languageModel.capabilities();
-    return capabilities.available as MultimodalAvailability;
+    const availability = await LanguageModel.availability();
+    return availability as MultimodalAvailability;
   } catch (error) {
     console.error('Error checking language model availability:', error);
     return MultimodalAvailability.UNAVAILABLE;
@@ -131,12 +126,12 @@ export async function askImageQuestion(image: Blob, question: string): Promise<s
   try {
     // Note: Chrome's stable AI APIs don't currently support direct image processing
     // This implementation provides a helpful response explaining the limitation
-    if (!window.ai?.languageModel) {
+    if (typeof LanguageModel === 'undefined') {
       throw new Error('Language Model API not available');
     }
 
     // Create language model session
-    const session = await window.ai.languageModel.create({
+    const session = await LanguageModel.create({
       systemPrompt: 'You are a helpful assistant. Explain to users that direct image analysis is not currently available in Chrome\'s stable AI APIs.',
       temperature: 0.3
     });

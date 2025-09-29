@@ -16,18 +16,13 @@ const mockSession = {
 };
 
 const mockLanguageModel = {
-  capabilities: jest.fn(),
+  availability: jest.fn(),
   create: jest.fn()
 };
 
-const mockAI = {
-  languageModel: mockLanguageModel
-};
-
-// Mock window.ai
-Object.defineProperty(window, 'ai', {
-  writable: true,
-  value: mockAI
+// Setup global mock
+beforeAll(() => {
+  (global as any).LanguageModel = mockLanguageModel;
 });
 
 describe('checkPromptAvailability', () => {
@@ -36,16 +31,16 @@ describe('checkPromptAvailability', () => {
   });
 
   it('returns readily available when API supports it', async () => {
-    mockLanguageModel.capabilities.mockResolvedValue({ available: 'readily' });
+    mockLanguageModel.availability.mockResolvedValue('readily');
     
     const result = await checkPromptAvailability();
     
     expect(result).toBe(PromptAvailability.READILY_AVAILABLE);
-    expect(mockLanguageModel.capabilities).toHaveBeenCalledTimes(1);
+    expect(mockLanguageModel.availability).toHaveBeenCalledTimes(1);
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockLanguageModel.capabilities.mockResolvedValue({ available: 'after-download' });
+    mockLanguageModel.availability.mockResolvedValue('after-download');
     
     const result = await checkPromptAvailability();
     
@@ -66,7 +61,7 @@ describe('checkPromptAvailability', () => {
   });
 
   it('returns unavailable on error', async () => {
-    mockLanguageModel.capabilities.mockRejectedValue(new Error('Network error'));
+    mockLanguageModel.availability.mockRejectedValue(new Error('Network error'));
     
     const result = await checkPromptAvailability();
     
@@ -77,7 +72,7 @@ describe('checkPromptAvailability', () => {
 describe('generateDrafts', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockLanguageModel.capabilities.mockResolvedValue({ available: 'readily' });
+    mockLanguageModel.availability.mockResolvedValue('readily');
     mockLanguageModel.create.mockResolvedValue(mockSession);
   });
 
@@ -160,7 +155,7 @@ describe('generateDrafts', () => {
   });
 
   it('throws error when API is unavailable', async () => {
-    mockLanguageModel.capabilities.mockResolvedValue({ available: 'no' });
+    mockLanguageModel.availability.mockResolvedValue('no');
     
     try {
       await generateDrafts('Test message');

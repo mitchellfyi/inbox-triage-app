@@ -14,19 +14,14 @@ const mockSummarizer = {
   destroy: jest.fn()
 };
 
-const mockAI = {
-  summarizer: {
-    capabilities: jest.fn(),
-    create: jest.fn().mockResolvedValue(mockSummarizer)
-  }
+const mockSummarizerGlobal = {
+  availability: jest.fn(),
+  create: jest.fn().mockResolvedValue(mockSummarizer)
 };
 
 // Setup global mocks
 beforeAll(() => {
-  Object.defineProperty(window, 'ai', {
-    value: mockAI,
-    writable: true
-  });
+  (global as any).Summarizer = mockSummarizerGlobal;
 });
 
 beforeEach(() => {
@@ -35,7 +30,7 @@ beforeEach(() => {
 
 describe('checkSummariserAvailability', () => {
   it('returns readily available when API is ready', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
     
     const result = await checkSummariserAvailability();
     
@@ -43,7 +38,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'after-download' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('after-download');
     
     const result = await checkSummariserAvailability();
     
@@ -51,7 +46,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not supported', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
     
     const result = await checkSummariserAvailability();
     
@@ -72,7 +67,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable on error', async () => {
-    mockAI.summarizer.capabilities.mockRejectedValue(new Error('Network error'));
+    mockSummarizerGlobal.capabilities.mockRejectedValue(new Error('Network error'));
     
     const result = await checkSummariserAvailability();
     
@@ -82,7 +77,7 @@ describe('checkSummariserAvailability', () => {
 
 describe('getTlDr', () => {
   beforeEach(() => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
     mockSummarizer.summarize.mockResolvedValue('This is a test summary');
   });
 
@@ -93,7 +88,7 @@ describe('getTlDr', () => {
     
     expect(result.content).toBe('This is a test summary');
     expect(result.usedHybrid).toBe(false);
-    expect(mockAI.summarizer.create).toHaveBeenCalledWith({
+    expect(mockSummarizerGlobal.create).toHaveBeenCalledWith({
       type: 'tl;dr',
       length: 'short',
       format: 'plain-text'
@@ -118,7 +113,7 @@ describe('getTlDr', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
     
     await expect(getTlDr('test text')).rejects.toThrow();
   });
@@ -164,7 +159,7 @@ describe('getTlDr', () => {
 
 describe('getKeyPoints', () => {
   beforeEach(() => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('readily');
   });
 
   it('extracts key points successfully', async () => {
@@ -178,7 +173,7 @@ describe('getKeyPoints', () => {
       'Second key issue', 
       'Third action item'
     ]);
-    expect(mockAI.summarizer.create).toHaveBeenCalledWith({
+    expect(mockSummarizerGlobal.create).toHaveBeenCalledWith({
       type: 'key-points',
       length: 'short',
       format: 'plain-text'
@@ -237,7 +232,7 @@ describe('getKeyPoints', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.capabilities.mockResolvedValue('no');
     
     await expect(getKeyPoints('test text')).rejects.toThrow();
   });

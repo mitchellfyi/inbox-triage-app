@@ -14,11 +14,9 @@ const mockSession = {
   destroy: jest.fn()
 };
 
-const mockAI = {
-  languageModel: {
-    capabilities: jest.fn(),
-    create: jest.fn().mockResolvedValue(mockSession)
-  }
+const mockLanguageModel = {
+  availability: jest.fn(),
+  create: jest.fn().mockResolvedValue(mockSession)
 };
 
 // Mock the summarizer module
@@ -28,10 +26,7 @@ jest.mock('../summarizer', () => ({
 
 // Setup global mocks
 beforeAll(() => {
-  Object.defineProperty(window, 'ai', {
-    value: mockAI,
-    writable: true
-  });
+  (global as any).LanguageModel = mockLanguageModel;
 });
 
 beforeEach(() => {
@@ -40,16 +35,16 @@ beforeEach(() => {
 
 describe('checkMultimodalAvailability', () => {
   it('returns readily available when API is ready', async () => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
+    mockLanguageModel.availability.mockResolvedValue('readily');
     
     const result = await checkMultimodalAvailability();
     
     expect(result).toBe(MultimodalAvailability.READILY_AVAILABLE);
-    expect(mockAI.languageModel.capabilities).toHaveBeenCalled();
+    expect(mockLanguageModel.availability).toHaveBeenCalled();
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'after-download' });
+    mockLanguageModel.availability.mockResolvedValue('after-download');
     
     const result = await checkMultimodalAvailability();
     
@@ -57,7 +52,7 @@ describe('checkMultimodalAvailability', () => {
   });
 
   it('returns unavailable when API is not supported', async () => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'no' });
+    mockLanguageModel.availability.mockResolvedValue('no');
     
     const result = await checkMultimodalAvailability();
     
@@ -65,18 +60,18 @@ describe('checkMultimodalAvailability', () => {
   });
 
   it('handles missing AI API gracefully', async () => {
-    Object.defineProperty(window, 'ai', { value: undefined, writable: true });
+    delete (global as any).LanguageModel;
     
     const result = await checkMultimodalAvailability();
     
     expect(result).toBe(MultimodalAvailability.UNAVAILABLE);
     
     // Restore mock
-    Object.defineProperty(window, 'ai', { value: mockAI, writable: true });
+    (global as any).LanguageModel = mockLanguageModel;
   });
 
   it('handles API errors gracefully', async () => {
-    mockAI.languageModel.capabilities.mockRejectedValue(new Error('Network error'));
+    mockLanguageModel.availability.mockRejectedValue(new Error('Network error'));
     
     const result = await checkMultimodalAvailability();
     
@@ -90,7 +85,7 @@ describe('askImageQuestion', () => {
   };
 
   beforeEach(() => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
+    mockLanguageModel.availability.mockResolvedValue('readily');
   });
 
   it('successfully processes image question', async () => {
@@ -103,7 +98,7 @@ describe('askImageQuestion', () => {
     const result = await askImageQuestion(testImage, testQuestion);
     
     expect(result).toBe(expectedResponse);
-    expect(mockAI.languageModel.create).toHaveBeenCalledWith({
+    expect(mockLanguageModel.create).toHaveBeenCalledWith({
       systemPrompt: expect.stringContaining('helpful assistant'),
       temperature: 0.3
     });
@@ -187,7 +182,7 @@ describe('askImageQuestion', () => {
   });
 
   it('handles API unavailability', async () => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'no' });
+    mockLanguageModel.availability.mockResolvedValue('no');
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -260,7 +255,7 @@ describe('askImageQuestionWithSummary', () => {
   };
 
   beforeEach(() => {
-    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
+    mockLanguageModel.availability.mockResolvedValue('readily');
   });
 
   it('returns original answer if within length limit', async () => {
