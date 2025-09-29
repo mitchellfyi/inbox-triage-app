@@ -100,10 +100,14 @@ export async function parseAttachment(
 async function generateAttachmentSummary(text: string, filename: string) {
   try {
     // Generate TL;DR and key points in parallel
-    const [tldr, keyPoints] = await Promise.all([
+    const [tldrResult, keyPointsResult] = await Promise.all([
       getTlDr(`File: ${filename}\n\n${text}`),
       getKeyPoints(`File: ${filename}\n\n${text}`),
     ]);
+    
+    // Extract content from results
+    const tldr = tldrResult.content;
+    const keyPoints = keyPointsResult.keyPoints;
     
     // Generate one-line summary (use first sentence of TL;DR or first key point)
     const oneLineSummary = tldr.split(/[.!?]/)[0].trim() || 

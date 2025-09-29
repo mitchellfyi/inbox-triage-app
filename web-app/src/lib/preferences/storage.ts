@@ -68,12 +68,12 @@ function validatePreferencesData(data: unknown): data is PreferencesData {
   if (!d.preferences || !d.instructionMemory || !d.version) return false;
   
   // Basic validation of preferences structure
-  const prefs = d.preferences;
+  const prefs = d.preferences as Record<string, unknown>;
   if (!prefs.processingMode || !prefs.defaultTone || !prefs.defaultLanguage) return false;
   if (!prefs.accessibility || typeof prefs.createdAt !== 'number') return false;
   
   // Basic validation of instruction memory
-  const memory = d.instructionMemory;
+  const memory = d.instructionMemory as Record<string, unknown>;
   if (!Array.isArray(memory.instructions) || typeof memory.maxInstructions !== 'number') return false;
   
   return true;

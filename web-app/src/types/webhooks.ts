@@ -26,6 +26,9 @@ export interface WebhookState {
   lastEventTime?: number;
   eventCount: number;
   error?: string;
+  pendingEvents: WebhookEvent[];
+  lastError?: string;
+  lastConnected?: Date;
 }
 
 export interface WebhookEvent {
@@ -91,18 +94,4 @@ export interface WebhookSettings {
     showToast: boolean;
     showBadge: boolean;
   };
-}
-
-export enum WebhookConnectionStatus {
-  DISCONNECTED = 'disconnected',
-  CONNECTING = 'connecting',
-  CONNECTED = 'connected',
-  ERROR = 'error'
-}
-
-export interface WebhookServiceState {
-  status: WebhookConnectionStatus;
-  lastConnected?: Date;
-  lastError?: string;
-  pendingEvents: WebhookEvent[];
 }
