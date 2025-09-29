@@ -91,7 +91,8 @@ describe('getTlDr', () => {
     
     const result = await getTlDr(testText);
     
-    expect(result).toBe('This is a test summary');
+    expect(result.content).toBe('This is a test summary');
+    expect(result.usedHybrid).toBe(false);
     expect(mockAI.summarizer.create).toHaveBeenCalledWith({
       type: 'tl;dr',
       length: 'short',
@@ -108,7 +109,7 @@ describe('getTlDr', () => {
     
     const result = await getTlDr('test text');
     
-    expect(result).toBe('Test summary with whitespace');
+    expect(result.content).toBe('Test summary with whitespace');
   });
 
   it('throws error for empty input', async () => {
@@ -172,7 +173,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('Email thread text');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First important point',
       'Second key issue', 
       'Third action item'
@@ -190,7 +191,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First point',
       'Second point',
       'Third point'
@@ -203,8 +204,8 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toHaveLength(5);
-    expect(result).toEqual([
+    expect(result.keyPoints).toHaveLength(5);
+    expect(result.keyPoints).toEqual([
       'Point 1', 'Point 2', 'Point 3', 'Point 4', 'Point 5'
     ]);
   });
@@ -215,7 +216,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First point',
       'Second point',
       'Third point'
@@ -227,7 +228,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([]);
+    expect(result.keyPoints).toEqual([]);
   });
 
   it('throws error for empty input', async () => {

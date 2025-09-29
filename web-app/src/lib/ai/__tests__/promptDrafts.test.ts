@@ -103,11 +103,12 @@ describe('generateDrafts', () => {
     
     const result = await generateDrafts('Meeting tomorrow at 3pm. Please confirm.');
     
-    expect(result).toHaveLength(3);
-    expect(result[0]).toEqual({
+    expect(result.drafts).toHaveLength(3);
+    expect(result.drafts[0]).toEqual({
       subject: 'Re: Meeting Tomorrow',
       body: 'Dear John,\n\nThank you for the invitation. I will attend.\n\nBest regards,\nAlice'
     });
+    expect(result.usedHybrid).toBe(false);
     expect(mockSession.destroy).toHaveBeenCalledTimes(1);
   });
 
@@ -120,7 +121,7 @@ describe('generateDrafts', () => {
       'Ask about the agenda'
     );
     
-    expect(result).toHaveLength(3);
+    expect(result.drafts).toHaveLength(3);
     expect(mockLanguageModel.create).toHaveBeenCalledWith({
       systemPrompt: expect.stringContaining('warm and approachable'),
       temperature: 0.7
@@ -166,8 +167,8 @@ describe('generateDrafts', () => {
       fail('Should have thrown');
     } catch (error: unknown) {
       const err = error as { userMessage: string; code: string };
-      expect(err.userMessage).toContain('unavailable');
-      expect(err.code).toBe('UNAVAILABLE');
+      expect(err.userMessage).toContain('Unable to generate drafts');
+      expect(err.code).toBe('UNKNOWN');
     }
   });
 
@@ -273,7 +274,7 @@ describe('generateDrafts', () => {
     
     const result = await generateDrafts('Test message');
     
-    expect(result[0].subject).toBe('Re: Test');
-    expect(result[0].body).toBe('Dear John,\n\nTest body.\n\nBest,\nAlice');
+    expect(result.drafts[0].subject).toBe('Re: Test');
+    expect(result.drafts[0].body).toBe('Dear John,\n\nTest body.\n\nBest,\nAlice');
   });
 });

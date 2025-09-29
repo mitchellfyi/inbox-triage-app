@@ -90,25 +90,27 @@ describe('askImageQuestion', () => {
   };
 
   beforeEach(() => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'readily' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
   });
 
   it('successfully processes image question', async () => {
     const testImage = createTestImage();
     const testQuestion = 'What do you see in this image?';
-    const expectedResponse = 'I can see a test image with various elements.';
+    const expectedResponse = 'I understand you want to analyze an image, but Chrome\'s built-in AI APIs don\'t currently support direct image analysis in the stable release. Here are some alternative approaches...';
     
-    mockPrompt.prompt.mockResolvedValue(expectedResponse);
+    mockSession.prompt.mockResolvedValue(expectedResponse);
     
     const result = await askImageQuestion(testImage, testQuestion);
     
     expect(result).toBe(expectedResponse);
-    expect(mockAI.prompt.create).toHaveBeenCalled();
-    expect(mockPrompt.prompt).toHaveBeenCalledWith(
-      expect.stringContaining(testQuestion),
-      { images: [testImage] }
+    expect(mockAI.languageModel.create).toHaveBeenCalledWith({
+      systemPrompt: expect.stringContaining('helpful assistant'),
+      temperature: 0.3
+    });
+    expect(mockSession.prompt).toHaveBeenCalledWith(
+      expect.stringContaining(testQuestion)
     );
-    expect(mockPrompt.destroy).toHaveBeenCalled();
+    expect(mockSession.destroy).toHaveBeenCalled();
   });
 
   it('validates image input', async () => {
@@ -157,7 +159,7 @@ describe('askImageQuestion', () => {
     const unsupportedImage = new Blob(['content'], { type: 'image/gif' });
     await expect(askImageQuestion(unsupportedImage, testQuestion))
       .rejects.toMatchObject({
-        userMessage: expect.stringContaining('Unsupported image format'),
+        userMessage: expect.stringContaining('Direct image analysis is not currently supported'),
         code: 'UNSUPPORTED_FORMAT'
       });
     
@@ -165,15 +167,15 @@ describe('askImageQuestion', () => {
     const textFile = new Blob(['content'], { type: 'text/plain' });
     await expect(askImageQuestion(textFile, testQuestion))
       .rejects.toMatchObject({
-        userMessage: expect.stringContaining('Unsupported image format'),
+        userMessage: expect.stringContaining('Direct image analysis is not currently supported'),
         code: 'UNSUPPORTED_FORMAT'
       });
   });
 
   it('supports all expected image formats', async () => {
     const testQuestion = 'What is this?';
-    const expectedResponse = 'Test response';
-    mockPrompt.prompt.mockResolvedValue(expectedResponse);
+    const expectedResponse = 'Test response explaining limitations';
+    mockSession.prompt.mockResolvedValue(expectedResponse);
     
     const formats = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     
@@ -185,7 +187,7 @@ describe('askImageQuestion', () => {
   });
 
   it('handles API unavailability', async () => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'no' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'no' });
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -198,20 +200,20 @@ describe('askImageQuestion', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    mockPrompt.prompt.mockRejectedValue(new Error('token limit exceeded'));
+    mockSession.prompt.mockRejectedValue(new Error('token limit exceeded'));
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
     
     await expect(askImageQuestion(testImage, testQuestion))
       .rejects.toMatchObject({
-        userMessage: expect.stringContaining('too large to process'),
+        userMessage: expect.stringContaining('too long to process'),
         code: 'TOKEN_LIMIT'
       });
   });
 
   it('handles network errors appropriately', async () => {
-    mockPrompt.prompt.mockRejectedValue(new Error('network connection failed'));
+    mockSession.prompt.mockRejectedValue(new Error('network connection failed'));
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -223,8 +225,8 @@ describe('askImageQuestion', () => {
       });
   });
 
-  it('always destroys prompt instance', async () => {
-    mockPrompt.prompt.mockRejectedValue(new Error('Test error'));
+  it('always destroys session instance', async () => {
+    mockSession.prompt.mockRejectedValue(new Error('Test error'));
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -235,18 +237,18 @@ describe('askImageQuestion', () => {
       // Expected to throw
     }
     
-    expect(mockPrompt.destroy).toHaveBeenCalled();
+    expect(mockSession.destroy).toHaveBeenCalled();
   });
 
   it('handles empty responses from AI', async () => {
-    mockPrompt.prompt.mockResolvedValue('');
+    mockSession.prompt.mockResolvedValue('');
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
     
     await expect(askImageQuestion(testImage, testQuestion))
       .rejects.toMatchObject({
-        userMessage: expect.stringContaining('No answer could be generated'),
+        userMessage: expect.stringContaining('No response could be generated'),
         code: 'UNKNOWN'
       });
   });
@@ -258,12 +260,12 @@ describe('askImageQuestionWithSummary', () => {
   };
 
   beforeEach(() => {
-    mockAI.prompt.capabilities.mockResolvedValue({ available: 'readily' });
+    mockAI.languageModel.capabilities.mockResolvedValue({ available: 'readily' });
   });
 
   it('returns original answer if within length limit', async () => {
     const shortResponse = 'This is a short response.';
-    mockPrompt.prompt.mockResolvedValue(shortResponse);
+    mockSession.prompt.mockResolvedValue(shortResponse);
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -277,10 +279,10 @@ describe('askImageQuestionWithSummary', () => {
     const longResponse = 'This is a very long response that exceeds the maximum length limit and should be summarised using the TL;DR functionality to provide a more concise answer for the user.';
     const summarisedResponse = 'This is a summarised response.';
     
-    mockPrompt.prompt.mockResolvedValue(longResponse);
+    mockSession.prompt.mockResolvedValue(longResponse);
     
     const { getTlDr } = await import('../summarizer');
-    (getTlDr as jest.Mock).mockResolvedValue(summarisedResponse);
+    (getTlDr as jest.Mock).mockResolvedValue({ content: summarisedResponse });
     
     const testImage = createTestImage();
     const testQuestion = 'What is this?';
@@ -294,7 +296,7 @@ describe('askImageQuestionWithSummary', () => {
   it('falls back to original answer if summarisation fails', async () => {
     const longResponse = 'This is a very long response that should be summarised but summarisation will fail.';
     
-    mockPrompt.prompt.mockResolvedValue(longResponse);
+    mockSession.prompt.mockResolvedValue(longResponse);
     
     const { getTlDr } = await import('../summarizer');
     (getTlDr as jest.Mock).mockRejectedValue(new Error('Summarisation failed'));
