@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { generateDrafts, checkPromptAvailability, PromptAvailability, type Draft, type DraftTone, type PromptError } from '../lib/ai/promptDrafts';
+import { checkPromptAvailability, PromptAvailability, type Draft, type DraftTone, type PromptError } from '../lib/ai/promptDrafts';
+import { generateDraftsWithPreferences } from '../lib/preferences/drafts';
+import { usePreferences, useEnabledInstructions } from '../lib/preferences/context';
 import GuidanceBar from './GuidanceBar';
 
 interface ReplyDraftsProps {
@@ -30,6 +32,9 @@ const DRAFT_TYPES = [
  * Component for generating and displaying reply drafts with tone control and guidance
  */
 export default function ReplyDrafts({ threadContent, isLoading = false, hasSummary = false }: ReplyDraftsProps) {
+  const preferences = usePreferences();
+  const enabledInstructions = useEnabledInstructions();
+  
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [selectedTone, setSelectedTone] = useState<DraftTone>('neutral');
   const [guidance, setGuidance] = useState('');
@@ -37,6 +42,13 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
   const [error, setError] = useState<string>();
   const [availability, setAvailability] = useState<PromptAvailability>();
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Initialize with user's preferred tone when preferences load
+  useEffect(() => {
+    if (!preferences.isLoading && selectedTone === 'neutral') {
+      setSelectedTone(preferences.data.preferences.defaultTone);
+    }
+  }, [preferences.isLoading, preferences.data.preferences.defaultTone, selectedTone]);
 
   // Check AI model availability on component mount
   useEffect(() => {
@@ -55,7 +67,7 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
 
   // Debounced draft generation
   useEffect(() => {
-    if (!threadContent || !hasSummary) return;
+    if (!threadContent || !hasSummary || preferences.isLoading) return;
 
     const timeoutId = setTimeout(() => {
       handleGenerateDrafts();
@@ -63,10 +75,10 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
 
     return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTone, guidance, threadContent, hasSummary]);
+  }, [selectedTone, guidance, threadContent, hasSummary, preferences.isLoading]);
 
   const handleGenerateDrafts = useCallback(async () => {
-    if (!threadContent || isDraftLoading) return;
+    if (!threadContent || isDraftLoading || preferences.isLoading) return;
 
     setError(undefined);
     setIsDraftLoading(true);
@@ -80,7 +92,14 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
         setIsDownloading(true);
       }
 
-      const generatedDrafts = await generateDrafts(threadContent, selectedTone, guidance);
+      // Use preferences-aware draft generation
+      const generatedDrafts = await generateDraftsWithPreferences(threadContent, {
+        tone: selectedTone,
+        guidance,
+        preferences: preferences.data.preferences,
+        customInstructions: enabledInstructions
+      });
+      
       setDrafts(generatedDrafts);
     } catch (err) {
       console.error('Draft generation failed:', err);
@@ -92,7 +111,7 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
       setIsDraftLoading(false);
       setIsDownloading(false);
     }
-  }, [threadContent, selectedTone, guidance, isDraftLoading]);
+  }, [threadContent, selectedTone, guidance, isDraftLoading, preferences.data.preferences, preferences.isLoading, enabledInstructions]);
 
   const handleCopyDraft = useCallback(async (draft: Draft) => {
     try {

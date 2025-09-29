@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import { PreferencesProvider } from "@/lib/preferences/context";
 
 export const metadata: Metadata = {
   title: "Inbox Triage App",
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <Navigation />
-        {children}
+        <PreferencesProvider>
+          <Navigation />
+          {children}
+        </PreferencesProvider>
       </body>
     </html>
   );

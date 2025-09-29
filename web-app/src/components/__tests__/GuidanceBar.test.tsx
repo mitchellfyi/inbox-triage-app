@@ -56,6 +56,11 @@ describe('GuidanceBar', () => {
       const textarea = screen.getByRole('textbox', { name: /guidance/i });
       await user.type(textarea, 'Test');
       
+      // Check that onChange was called for each character
+      expect(mockOnChange).toHaveBeenCalledTimes(4);
+      expect(mockOnChange).toHaveBeenCalledWith('T');
+      expect(mockOnChange).toHaveBeenCalledWith('Te');
+      expect(mockOnChange).toHaveBeenCalledWith('Tes');
       expect(mockOnChange).toHaveBeenCalledWith('Test');
     });
 
