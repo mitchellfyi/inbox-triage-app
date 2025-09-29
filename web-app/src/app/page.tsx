@@ -50,8 +50,8 @@ export default function Home() {
         getKeyPoints(text)
       ]);
 
-      setTldr(tldrResult);
-      setKeyPoints(keyPointsResult);
+      setTldr(tldrResult.content);
+      setKeyPoints(keyPointsResult.keyPoints);
     } catch (err) {
       console.error('Summarisation failed:', err);
       
