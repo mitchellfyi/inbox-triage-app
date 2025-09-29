@@ -1,3 +1,5 @@
+import WebhookSettings from '../../components/WebhookSettings';
+
 export default function SettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -12,6 +14,9 @@ export default function SettingsPage() {
         </header>
         
         <div className="space-y-6">
+          {/* Webhook Settings */}
+          <WebhookSettings />
+          
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-medium text-gray-800 mb-4">AI Processing Mode</h2>
             <div className="space-y-3">
