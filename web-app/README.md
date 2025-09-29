@@ -178,6 +178,42 @@ See the main [AGENTS.md](../AGENTS.md) for development guidelines and workflow.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The app is configured for easy deployment on Vercel:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mitchellfyi/inbox-triage-app)
+
+### Manual Deployment Steps
+
+1. **Fork or clone this repository**
+2. **Connect to Vercel:**
+   - Go to [Vercel](https://vercel.com/new)
+   - Import your GitHub repository
+   - Select the root directory (Vercel will auto-detect the Next.js app in `web-app/`)
+3. **Configure Environment Variables:**
+   - Set `NEXT_PUBLIC_GMAIL_CLIENT_ID` (optional, for Gmail integration)
+   - Set `NEXT_PUBLIC_OUTLOOK_CLIENT_ID` (optional, for Outlook integration)
+   - See [ENVIRONMENT.md](../ENVIRONMENT.md) for detailed setup instructions
+4. **Deploy:** Vercel will automatically build and deploy your app
+
+### Deployment Configuration
+
+The project includes:
+- `vercel.json` with optimised serverless function settings
+- Automatic Next.js detection and build configuration
+- CORS headers for API routes
+- Optimised function timeouts for AI processing
+
+### Post-Deployment Setup
+
+1. **Update OAuth Redirect URIs:**
+   - Add your Vercel domain to Gmail/Outlook OAuth applications
+   - Update redirect URIs to include your production domain
+2. **Test Core Features:**
+   - Email thread summarisation (works without OAuth)
+   - Attachment parsing and AI Q&A
+   - Reply draft generation
+   - Settings and preferences
+
+**Live Demo:** [https://your-app.vercel.app](https://your-app.vercel.app) (replace with your actual Vercel URL)
+
+For detailed deployment troubleshooting, see the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).

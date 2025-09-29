@@ -6,6 +6,12 @@ A web-based email triage companion that helps you summarise email threads, under
 
 **Key value:** Turn 15-minute email processing into 30-second decisions while keeping your data private.
 
+## Live Demo
+
+🚀 **[Try the live app](https://your-app.vercel.app)** (replace with actual Vercel URL after deployment)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mitchellfyi/inbox-triage-app)
+
 ## Docs map
 
 Navigate the project documentation:
@@ -14,6 +20,7 @@ Navigate the project documentation:
 - **[AGENTS.md](AGENTS.md)** – Development guide for AI coding agents and contributors  
 - **[.github/copilot-instructions.md](.github/copilot-instructions.md)** – GitHub Copilot configuration and rules
 - **[TODO.md](TODO.md)** – Project task list and progress tracking
+- **[ENVIRONMENT.md](ENVIRONMENT.md)** – Environment variables and OAuth setup guide
 
 ## Quickstart
 
@@ -119,3 +126,34 @@ In the `web-app` directory, you can run:
 - `npm run test:run` - Run tests once
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
+
+## Deployment
+
+### Deploy to Vercel (Recommended)
+
+The project is optimised for deployment on Vercel:
+
+1. **One-click deploy:**  
+   [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/mitchellfyi/inbox-triage-app)
+
+2. **Manual deployment:**
+   - Fork this repository
+   - Connect to Vercel from your dashboard
+   - Set environment variables (see [ENVIRONMENT.md](ENVIRONMENT.md))
+   - Deploy!
+
+### Environment Variables
+
+For Gmail/Outlook integration, set these in Vercel:
+- `NEXT_PUBLIC_GMAIL_CLIENT_ID` (optional)
+- `NEXT_PUBLIC_OUTLOOK_CLIENT_ID` (optional)
+
+See [ENVIRONMENT.md](ENVIRONMENT.md) for complete setup instructions.
+
+### Production Checklist
+
+- [ ] OAuth applications configured with production URLs
+- [ ] Environment variables set in Vercel
+- [ ] Test core features: summarisation, attachments, reply drafts
+- [ ] Verify Chrome AI APIs work in production
+- [ ] Update this README with your live demo URL
