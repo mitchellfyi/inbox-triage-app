@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { checkPromptAvailability, PromptAvailability, type Draft, type DraftTone, type PromptError } from '../lib/ai/promptDrafts';
+import { checkPromptAvailability, PromptAvailability, type Draft, type DraftTone, type PromptError, type DraftResult } from '../lib/ai/promptDrafts';
 import { generateDraftsWithPreferences } from '../lib/preferences/drafts';
 import { usePreferences, useEnabledInstructions } from '../lib/preferences/context';
 import GuidanceBar from './GuidanceBar';
+import PrivacyNotification from './PrivacyNotification';
 
 interface ReplyDraftsProps {
   /** The email thread content to generate replies for */
@@ -42,6 +43,10 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
   const [error, setError] = useState<string>();
   const [availability, setAvailability] = useState<PromptAvailability>();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [hybridNotification, setHybridNotification] = useState<{ show: boolean; reason: string }>({ 
+    show: false, 
+    reason: '' 
+  });
 
   // Initialize with user's preferred tone when preferences load
   useEffect(() => {
@@ -81,6 +86,7 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
     if (!threadContent || isDraftLoading || preferences.isLoading) return;
 
     setError(undefined);
+    setHybridNotification({ show: false, reason: '' });
     setIsDraftLoading(true);
 
     try {
@@ -93,14 +99,19 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
       }
 
       // Use preferences-aware draft generation
-      const generatedDrafts = await generateDraftsWithPreferences(threadContent, {
+      const result: DraftResult = await generateDraftsWithPreferences(threadContent, {
         tone: selectedTone,
         guidance,
         preferences: preferences.data.preferences,
         customInstructions: enabledInstructions
       });
       
-      setDrafts(generatedDrafts);
+      setDrafts(result.drafts);
+      
+      // Show privacy notification if hybrid processing was used
+      if (result.usedHybrid && result.reason) {
+        setHybridNotification({ show: true, reason: result.reason });
+      }
     } catch (err) {
       console.error('Draft generation failed:', err);
       
@@ -161,6 +172,15 @@ export default function ReplyDrafts({ threadContent, isLoading = false, hasSumma
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">Reply Drafts</h2>
+      
+      {/* Privacy Notification */}
+      {hybridNotification.show && (
+        <PrivacyNotification
+          reason={hybridNotification.reason}
+          onDismiss={() => setHybridNotification({ show: false, reason: '' })}
+          className="mb-4"
+        />
+      )}
       
       {/* Controls */}
       <div className="space-y-4 mb-6">

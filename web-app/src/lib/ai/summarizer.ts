@@ -1,7 +1,10 @@
 /**
  * Chrome Summarizer API wrapper for email thread summarisation
- * Provides TL;DR and key points extraction with availability checks and error handling
+ * Provides TL;DR and key points extraction with availability checks and hybrid fallback
  */
+
+import { makeHybridDecision, callHybridFallback } from './hybrid';
+import type { ProcessingMode } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in AI Summarizer API
 declare global {
@@ -33,8 +36,14 @@ export enum SummariserAvailability {
 }
 
 export interface SummariserError extends Error {
-  code: 'UNAVAILABLE' | 'TOKEN_LIMIT' | 'NETWORK_ERROR' | 'UNKNOWN';
+  code: 'UNAVAILABLE' | 'TOKEN_LIMIT' | 'NETWORK_ERROR' | 'HYBRID_FALLBACK' | 'UNKNOWN';
   userMessage: string;
+}
+
+export interface SummariserResult {
+  content: string;
+  usedHybrid: boolean;
+  reason?: string;
 }
 
 /**
@@ -67,6 +76,9 @@ function createSummariserError(originalError: unknown, operation: string): Summa
     } else if (originalError.message.includes('network') || originalError.message.includes('connection')) {
       error.code = 'NETWORK_ERROR'; 
       error.userMessage = 'Network error occurred. Please check your connection and try again';
+    } else if (originalError.message.includes('Cloud processing failed') || originalError.message.includes('hybrid')) {
+      error.code = 'HYBRID_FALLBACK';
+      error.userMessage = 'Cloud processing failed. Please try again or check your connection';
     } else {
       error.code = 'UNKNOWN';
       error.userMessage = `Unable to ${operation}. Please try again or enable hybrid mode`;
@@ -80,22 +92,52 @@ function createSummariserError(originalError: unknown, operation: string): Summa
 }
 
 /**
- * Generate a TL;DR summary for the given text
+ * Generate a TL;DR summary for the given text with hybrid fallback support
  * @param text The email thread or text content to summarise
- * @returns Promise resolving to a concise TL;DR summary
+ * @param processingMode User's processing mode preference
+ * @returns Promise resolving to a SummariserResult with TL;DR summary
  */
-export async function getTlDr(text: string): Promise<string> {
+export async function getTlDr(
+  text: string, 
+  processingMode: ProcessingMode = 'on-device'
+): Promise<SummariserResult> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createSummariserError(new Error('Empty input'), 'generate TL;DR');
   }
 
-  // Check availability
-  const availability = await checkSummariserAvailability();
-  if (availability === SummariserAvailability.UNAVAILABLE) {
-    throw createSummariserError(new Error('Unavailable'), 'generate TL;DR');
+  // Make hybrid decision
+  const decision = await makeHybridDecision({
+    processingMode,
+    contentText: text,
+    operationType: 'summarise'
+  });
+
+  if (!decision.useLocal && !decision.canFallback) {
+    throw createSummariserError(new Error(decision.reason), 'generate TL;DR');
   }
 
+  if (!decision.useLocal && decision.canFallback) {
+    // Use hybrid fallback
+    try {
+      const result = await callHybridFallback('summarise', text);
+      if (result && typeof result === 'object' && 'tldr' in result) {
+        return {
+          content: (result as { tldr: string }).tldr,
+          usedHybrid: true,
+          reason: decision.reason
+        };
+      }
+      throw new Error('Invalid response from hybrid service');
+    } catch (error) {
+      console.error('Hybrid TL;DR generation failed:', error);
+      const hybridError = createSummariserError(error, 'generate TL;DR using cloud processing');
+      hybridError.code = 'HYBRID_FALLBACK';
+      throw hybridError;
+    }
+  }
+
+  // Use local processing
   try {
     if (!window.ai?.summarizer) {
       throw new Error('Summarizer API not available');
@@ -112,7 +154,11 @@ export async function getTlDr(text: string): Promise<string> {
         context: 'Email thread' 
       });
       
-      return summary.trim();
+      return {
+        content: summary.trim(),
+        usedHybrid: false,
+        reason: decision.reason
+      };
     } finally {
       summarizer.destroy();
     }
@@ -123,22 +169,54 @@ export async function getTlDr(text: string): Promise<string> {
 }
 
 /**
- * Extract key points from the given text
+ * Extract key points from the given text with hybrid fallback support
  * @param text The email thread or text content to analyse  
- * @returns Promise resolving to an array of key points (max 5)
+ * @param processingMode User's processing mode preference
+ * @returns Promise resolving to a SummariserResult with key points array
  */
-export async function getKeyPoints(text: string): Promise<string[]> {
+export async function getKeyPoints(
+  text: string, 
+  processingMode: ProcessingMode = 'on-device'
+): Promise<SummariserResult & { keyPoints: string[] }> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createSummariserError(new Error('Empty input'), 'extract key points');
   }
 
-  // Check availability
-  const availability = await checkSummariserAvailability();
-  if (availability === SummariserAvailability.UNAVAILABLE) {
-    throw createSummariserError(new Error('Unavailable'), 'extract key points');
+  // Make hybrid decision
+  const decision = await makeHybridDecision({
+    processingMode,
+    contentText: text,
+    operationType: 'summarise'
+  });
+
+  if (!decision.useLocal && !decision.canFallback) {
+    throw createSummariserError(new Error(decision.reason), 'extract key points');
   }
 
+  if (!decision.useLocal && decision.canFallback) {
+    // Use hybrid fallback
+    try {
+      const result = await callHybridFallback('summarise', text);
+      if (result && typeof result === 'object' && 'keyPoints' in result) {
+        const keyPoints = (result as { keyPoints: string[] }).keyPoints || [];
+        return {
+          content: keyPoints.join('\n'),
+          keyPoints,
+          usedHybrid: true,
+          reason: decision.reason
+        };
+      }
+      throw new Error('Invalid response from hybrid service');
+    } catch (error) {
+      console.error('Hybrid key points extraction failed:', error);
+      const hybridError = createSummariserError(error, 'extract key points using cloud processing');
+      hybridError.code = 'HYBRID_FALLBACK';
+      throw hybridError;
+    }
+  }
+
+  // Use local processing
   try {
     if (!window.ai?.summarizer) {
       throw new Error('Summarizer API not available');
@@ -164,7 +242,12 @@ export async function getKeyPoints(text: string): Promise<string[]> {
         .filter(line => line.length > 0)
         .slice(0, 5); // Limit to 5 key points
 
-      return points;
+      return {
+        content: points.join('\n'),
+        keyPoints: points,
+        usedHybrid: false,
+        reason: decision.reason
+      };
     } finally {
       summarizer.destroy();
     }

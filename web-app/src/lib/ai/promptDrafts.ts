@@ -1,7 +1,10 @@
 /**
  * Chrome LanguageModel (Prompt) API wrapper for reply draft generation
- * Provides structured reply drafts with tone control and user guidance
+ * Provides structured reply drafts with tone control, user guidance and hybrid fallback
  */
+
+import { makeHybridDecision, callHybridFallback } from './hybrid';
+import type { ProcessingMode } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in LanguageModel API
 declare global {
@@ -35,7 +38,7 @@ export enum PromptAvailability {
 }
 
 export interface PromptError extends Error {
-  code: 'UNAVAILABLE' | 'TOKEN_LIMIT' | 'NETWORK_ERROR' | 'INVALID_JSON' | 'UNKNOWN';
+  code: 'UNAVAILABLE' | 'TOKEN_LIMIT' | 'NETWORK_ERROR' | 'INVALID_JSON' | 'HYBRID_FALLBACK' | 'UNKNOWN';
   userMessage: string;
 }
 
@@ -45,6 +48,12 @@ export interface Draft {
 }
 
 export type DraftTone = 'neutral' | 'friendly' | 'assertive' | 'formal';
+
+export interface DraftResult {
+  drafts: Draft[];
+  usedHybrid: boolean;
+  reason?: string;
+}
 
 // JSON schema constraint for structured draft generation
 const DRAFT_RESPONSE_SCHEMA = JSON.stringify({
@@ -111,6 +120,9 @@ function createPromptError(originalError: unknown, operation: string): PromptErr
     } else if (originalError.message.includes('Unavailable')) {
       error.code = 'UNAVAILABLE';
       error.userMessage = 'Draft generation is currently unavailable on this device';
+    } else if (originalError.message.includes('Cloud processing failed') || originalError.message.includes('hybrid')) {
+      error.code = 'HYBRID_FALLBACK';
+      error.userMessage = 'Cloud processing failed. Please try again or check your connection';
     } else {
       error.code = 'UNKNOWN';
       error.userMessage = `Unable to ${operation}. Please try again or enable hybrid mode`;
@@ -163,28 +175,57 @@ Each reply must include:
 }
 
 /**
- * Generate reply drafts with tone and guidance
+ * Generate reply drafts with tone and guidance with hybrid fallback support
  * @param text The email thread content to generate replies for
  * @param tone The tone style for the replies
  * @param guidance Additional user instructions
- * @returns Promise resolving to an array of 3 reply drafts
+ * @param processingMode User's processing mode preference
+ * @returns Promise resolving to a DraftResult with 3 reply drafts
  */
 export async function generateDrafts(
   text: string, 
   tone: DraftTone = 'neutral', 
-  guidance: string = ''
-): Promise<Draft[]> {
+  guidance: string = '',
+  processingMode: ProcessingMode = 'on-device'
+): Promise<DraftResult> {
   // Input validation
   if (!text || text.trim().length === 0) {
     throw createPromptError(new Error('Empty input'), 'generate drafts');
   }
 
-  // Check availability
-  const availability = await checkPromptAvailability();
-  if (availability === PromptAvailability.UNAVAILABLE) {
-    throw createPromptError(new Error('Unavailable'), 'generate drafts');
+  // Make hybrid decision
+  const decision = await makeHybridDecision({
+    processingMode,
+    contentText: text,
+    operationType: 'draft'
+  });
+
+  if (!decision.useLocal && !decision.canFallback) {
+    throw createPromptError(new Error(decision.reason), 'generate drafts');
   }
 
+  if (!decision.useLocal && decision.canFallback) {
+    // Use hybrid fallback
+    try {
+      const result = await callHybridFallback('draft', text, { tone, guidance });
+      if (result && typeof result === 'object' && 'drafts' in result) {
+        const drafts = (result as { drafts: Draft[] }).drafts || [];
+        return {
+          drafts,
+          usedHybrid: true,
+          reason: decision.reason
+        };
+      }
+      throw new Error('Invalid response from hybrid service');
+    } catch (error) {
+      console.error('Hybrid draft generation failed:', error);
+      const hybridError = createPromptError(error, 'generate drafts using cloud processing');
+      hybridError.code = 'HYBRID_FALLBACK';
+      throw hybridError;
+    }
+  }
+
+  // Use local processing
   try {
     if (!window.ai?.languageModel) {
       throw new Error('LanguageModel API not available');
@@ -232,7 +273,11 @@ export async function generateDrafts(
         });
       }
 
-      return drafts;
+      return {
+        drafts,
+        usedHybrid: false,
+        reason: decision.reason
+      };
     } finally {
       session.destroy();
     }
