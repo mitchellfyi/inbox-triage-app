@@ -6,6 +6,7 @@ import { getValidAccessToken } from '../auth/gmail-oauth';
 import type { 
   GmailThread, 
   GmailMessage, 
+  GmailMessagePayload,
   GmailListResponse,
   ImportedEmail,
   ImportedAttachment

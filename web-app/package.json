@@ -26,6 +26,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\""
   },
   "dependencies": {
+    "@azure/msal-browser": "^4.24.0",
     "mammoth": "^1.11.0",
     "next": "15.5.4",
     "pdfjs-dist": "^5.4.149",

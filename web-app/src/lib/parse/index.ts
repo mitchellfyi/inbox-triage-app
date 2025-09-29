@@ -4,10 +4,6 @@
 
 import type { ParsedAttachment, ParsedContent, ParseOptions } from '../../types/attachment';
 import { validateFile, generateAttachmentId, formatFileSize } from './utils';
-import { parsePdf } from './pdf';
-import { parseDocx } from './docx';
-import { parseSpreadsheet } from './xlsx';
-import { parseImage } from './image';
 import { getTlDr, getKeyPoints } from '../ai/summarizer';
 
 /**
@@ -49,20 +45,24 @@ export async function parseAttachment(
     
     switch (validation.type!) {
       case 'pdf':
+        const { parsePdf } = await import('./pdf');
         content = await parsePdf(file, options);
         break;
       case 'docx':
+        const { parseDocx } = await import('./docx');
         content = await parseDocx(file, options);
         break;
       case 'xlsx':
       case 'xls':
       case 'csv':
+        const { parseSpreadsheet } = await import('./xlsx');
         content = await parseSpreadsheet(file, options);
         break;
       case 'png':
       case 'jpg':
       case 'jpeg':
       case 'webp':
+        const { parseImage } = await import('./image');
         content = await parseImage(file, options);
         break;
       default:

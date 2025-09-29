@@ -24,7 +24,7 @@ export async function parseDocx(file: File, options: ParseOptions = {}): Promise
     
     // Convert DOCX to HTML first, then extract text
     const result = await mammoth.convertToHtml({ arrayBuffer }, {
-      convertImage: mammoth.images.ignoreAllImages, // Skip images for now
+      convertImage: mammoth.images.imgElement(() => Promise.resolve({ src: '' })), // Skip images for now
     });
     
     if (result.messages.length > 0) {
