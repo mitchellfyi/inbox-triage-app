@@ -9,25 +9,20 @@ import type { ProcessingMode, CustomModelKey } from '../../types/preferences';
 
 // Type definitions for Chrome's built-in AI Summarizer API
 declare global {
-  interface AI {
-    summarizer?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
-      }>;
-      create(options?: {
-        type?: 'tl;dr' | 'key-points' | 'teaser' | 'headline';
-        format?: 'plain-text' | 'markdown';
-        length?: 'short' | 'medium' | 'long';
-      }): Promise<{
-        summarize(input: string, options?: { context?: string }): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+  interface Summarizer {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      type?: 'tl;dr' | 'key-points' | 'teaser' | 'headline';
+      format?: 'plain-text' | 'markdown';
+      length?: 'short' | 'medium' | 'long';
+      signal?: AbortSignal;
+    }): Promise<{
+      summarize(input: string, options?: { context?: string }): Promise<string>;
+      destroy(): void;
+    }>;
   }
-  
-  interface Window {
-    ai?: AI;
-  }
+
+  var Summarizer: Summarizer;
 }
 
 export enum SummariserAvailability {
@@ -54,12 +49,12 @@ export interface SummariserResult {
  */
 export async function checkSummariserAvailability(): Promise<SummariserAvailability> {
   try {
-    if (!window.ai?.summarizer) {
+    if (!('Summarizer' in self)) {
       return SummariserAvailability.UNAVAILABLE;
     }
 
-    const capabilities = await window.ai.summarizer.capabilities();
-    return capabilities.available as SummariserAvailability;
+    const availability = await Summarizer.availability();
+    return availability as SummariserAvailability;
   } catch (error) {
     console.error('Error checking summariser availability:', error);
     return SummariserAvailability.UNAVAILABLE;
@@ -161,11 +156,11 @@ export async function getTlDr(
 
   // Use local processing
   try {
-    if (!window.ai?.summarizer) {
+    if (!('Summarizer' in self)) {
       throw new Error('Summarizer API not available');
     }
 
-    const summarizer = await window.ai.summarizer.create({
+    const summarizer = await Summarizer.create({
       type: 'tl;dr',
       length: 'short',
       format: 'plain-text'
@@ -261,11 +256,11 @@ export async function getKeyPoints(
 
   // Use local processing
   try {
-    if (!window.ai?.summarizer) {
+    if (!('Summarizer' in self)) {
       throw new Error('Summarizer API not available');
     }
 
-    const summarizer = await window.ai.summarizer.create({
+    const summarizer = await Summarizer.create({
       type: 'key-points',
       length: 'short',
       format: 'plain-text'

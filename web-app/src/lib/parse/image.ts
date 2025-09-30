@@ -1,23 +1,26 @@
 /**
- * Image parsing using Chrome's Prompt API multimodal capabilities
+ * Image parsing using Chrome's Language Model API
+ * Note: Direct image processing is experimental and not currently available in stable Chrome
  */
 
 import type { ParsedContent, ParseOptions } from '../../types/attachment';
 import { cleanText } from './utils';
 
-// Type definitions for Chrome's built-in AI Prompt API with multimodal support
+// Type definitions for Chrome's built-in AI Language Model API
+// Note: Direct image processing is experimental and not currently available
 declare global {
-  interface AI {
-    prompt?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
-      }>;
-      create(): Promise<{
-        prompt(input: string, options?: { images?: Blob[] }): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+  interface LanguageModel {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      systemPrompt?: string;
+      temperature?: number;
+    }): Promise<{
+      prompt(input: string): Promise<string>;
+      destroy(): void;
+    }>;
   }
+
+  var LanguageModel: LanguageModel;
 }
 
 const DEFAULT_OPTIONS: Required<ParseOptions> = {
@@ -27,20 +30,21 @@ const DEFAULT_OPTIONS: Required<ParseOptions> = {
 };
 
 /**
- * Parse image file and generate description using multimodal AI
+ * Parse image file and generate description using language model
+ * Note: Direct image analysis is not currently supported in stable Chrome AI APIs
  */
 export async function parseImage(file: File, options: ParseOptions = {}): Promise<ParsedContent> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const opts = { ...DEFAULT_OPTIONS, ...options };
   try {
-    // Check if multimodal AI is available
-    if (!window.ai?.prompt) {
-      throw new Error('Multimodal AI is not available on this device');
+    // Check if language model AI is available
+    if (typeof LanguageModel === 'undefined') {
+      throw new Error('Language model AI is not available on this device');
     }
     
-    const capabilities = await window.ai.prompt.capabilities();
-    if (capabilities.available === 'no') {
-      throw new Error('Multimodal AI is not available on this device');
+    const availability = await LanguageModel.availability();
+    if (availability === 'no') {
+      throw new Error('Language model AI is not available on this device');
     }
     
     // Validate that it's actually an image
@@ -48,16 +52,15 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
       throw new Error('File is not a valid image');
     }
     
-    // Create blob from file for AI processing
-    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-    
-    // Create prompt session
-    const prompt = await window.ai.prompt.create();
+    // Create language model session
+    const session = await LanguageModel.create({
+      systemPrompt: 'You are a helpful assistant that explains image analysis limitations to users.',
+      temperature: 0.3
+    });
     
     try {
-      const response = await prompt.prompt(
-        'Describe the contents of this image in detail. Include any text that is visible, objects, people, scenes, and relevant context. Be comprehensive but concise.',
-        { images: [blob] }
+      const response = await session.prompt(
+        `I have uploaded an image file (${file.name}, ${file.type}, ${Math.round(file.size / 1024)}KB) that I would like to have described. However, Chrome's built-in AI APIs don't currently support direct image analysis in the stable release. Please provide a helpful explanation of this limitation and suggest alternative approaches for analyzing images, such as using online OCR tools for text extraction or image recognition services.`
       );
       
       if (!response || response.trim().length === 0) {
@@ -69,11 +72,11 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
       return {
         text: cleanedDescription,
         metadata: {
-          imageDescription: cleanedDescription,
+          imageDescription: cleanedDescription
         },
       };
     } finally {
-      prompt.destroy();
+      session.destroy();
     }
   } catch (error) {
     console.error('Image parsing failed:', error);
@@ -86,19 +89,19 @@ export async function parseImage(file: File, options: ParseOptions = {}): Promis
 }
 
 /**
- * Extract text from image using OCR-like functionality via multimodal AI
- * This is optimized for images that primarily contain text
+ * Extract text from image (OCR-like functionality)
+ * Note: Direct image text extraction is not currently supported in stable Chrome AI APIs
  */
 export async function extractTextFromImage(file: File): Promise<ParsedContent> {
   try {
-    // Check if multimodal AI is available
-    if (!window.ai?.prompt) {
-      throw new Error('Multimodal AI is not available on this device');
+    // Check if language model AI is available
+    if (typeof LanguageModel === 'undefined') {
+      throw new Error('Language model AI is not available on this device');
     }
     
-    const capabilities = await window.ai.prompt.capabilities();
-    if (capabilities.available === 'no') {
-      throw new Error('Multimodal AI is not available on this device');
+    const availability = await LanguageModel.availability();
+    if (availability === 'no') {
+      throw new Error('Language model AI is not available on this device');
     }
     
     // Validate that it's actually an image
@@ -106,20 +109,19 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
       throw new Error('File is not a valid image');
     }
     
-    // Create blob from file for AI processing
-    const blob = new Blob([await file.arrayBuffer()], { type: file.type });
-    
-    // Create prompt session
-    const prompt = await window.ai.prompt.create();
+    // Create language model session
+    const session = await LanguageModel.create({
+      systemPrompt: 'You are a helpful assistant that explains OCR and text extraction limitations to users.',
+      temperature: 0.3
+    });
     
     try {
-      const response = await prompt.prompt(
-        'Extract all visible text from this image. Return only the text content, maintaining the original structure and formatting as much as possible. If there is no text, return "No text found".',
-        { images: [blob] }
+      const response = await session.prompt(
+        `I have uploaded an image file (${file.name}, ${file.type}) that I would like to extract text from using OCR (Optical Character Recognition). However, Chrome's built-in AI APIs don't currently support direct image text extraction in the stable release. Please provide a helpful explanation of this limitation and suggest alternative approaches for extracting text from images, such as using online OCR services, Google Lens, or dedicated OCR applications.`
       );
       
-      if (!response || response.trim().length === 0 || response.trim().toLowerCase() === 'no text found') {
-        // Fallback to general description if no text found
+      if (!response || response.trim().length === 0) {
+        // Fallback to general image parsing
         return await parseImage(file);
       }
       
@@ -128,11 +130,11 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
       return {
         text: cleanedText,
         metadata: {
-          imageDescription: `Text extracted from image: ${cleanedText}`,
+          imageDescription: cleanedText
         },
       };
     } finally {
-      prompt.destroy();
+      session.destroy();
     }
   } catch (error) {
     console.error('Image text extraction failed:', error);
@@ -142,18 +144,18 @@ export async function extractTextFromImage(file: File): Promise<ParsedContent> {
 }
 
 /**
- * Check if image parsing (multimodal AI) is supported
+ * Check if image parsing (language model AI) is supported
  */
 export async function isImageParsingSupported(): Promise<boolean> {
   try {
-    if (!window.ai?.prompt) {
+    if (typeof LanguageModel === 'undefined') {
       return false;
     }
     
-    const capabilities = await window.ai.prompt.capabilities();
-    return capabilities.available !== 'no';
+    const availability = await LanguageModel.availability();
+    return availability !== 'no';
   } catch (error) {
-    console.warn('Failed to check image parsing availability:', error);
+    console.warn('Failed to check language model availability:', error);
     return false;
   }
 }

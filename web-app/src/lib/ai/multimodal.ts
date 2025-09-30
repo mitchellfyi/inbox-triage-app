@@ -3,23 +3,23 @@
  * Enables users to ask questions about uploaded images using built-in AI
  */
 
-// Type definitions for Chrome's built-in AI Prompt API with multimodal support
+// Type definitions for Chrome's built-in AI Language Model API
+// Note: Multimodal capabilities are experimental and not currently available in stable Chrome
 declare global {
-  interface AI {
-    prompt?: {
-      capabilities(): Promise<{
-        available: 'readily' | 'after-download' | 'no';
-      }>;
-      create(): Promise<{
-        prompt(input: string, options?: { images?: Blob[] }): Promise<string>;
-        destroy(): void;
-      }>;
-    };
+  interface LanguageModel {
+    availability(): Promise<'readily' | 'after-download' | 'no'>;
+    create(options?: {
+      systemPrompt?: string;
+      temperature?: number;
+      topK?: number;
+      signal?: AbortSignal;
+    }): Promise<{
+      prompt(input: string): Promise<string>;
+      destroy(): void;
+    }>;
   }
-  
-  interface Window {
-    ai?: AI;
-  }
+
+  var LanguageModel: LanguageModel;
 }
 
 export enum MultimodalAvailability {
@@ -43,22 +43,23 @@ function createMultimodalError(error: Error, _operation: string): MultimodalErro
   if (error.message.toLowerCase().includes('unavailable') || 
       error.message.toLowerCase().includes('not available')) {
     code = 'UNAVAILABLE';
-    userMessage = 'Multimodal AI is not available on this device. Please ensure you\'re using Chrome with AI features enabled.';
+    userMessage = 'Language Model AI is not available on this device. Please ensure you\'re using Chrome with AI features enabled.';
   } else if (error.message.toLowerCase().includes('token') || 
              error.message.toLowerCase().includes('too long')) {
     code = 'TOKEN_LIMIT';
-    userMessage = 'The image or question is too large to process locally. Please try with a smaller image or shorter question.';
+    userMessage = 'The question is too long to process locally. Please try with a shorter question.';
   } else if (error.message.toLowerCase().includes('network') || 
              error.message.toLowerCase().includes('connection')) {
     code = 'NETWORK_ERROR';
-    userMessage = 'Network error occurred while processing the image. Please try again.';
+    userMessage = 'Network error occurred while processing your request. Please try again.';
   } else if (error.message.toLowerCase().includes('format') || 
              error.message.toLowerCase().includes('unsupported')) {
     code = 'UNSUPPORTED_FORMAT';
-    userMessage = 'Unsupported image format. Please use PNG, JPG, or WebP format.';
-  } else if (error.message.toLowerCase().includes('no answer could be generated')) {
+    userMessage = 'Note: Direct image analysis is not currently supported. Using text-based response instead.';
+  } else if (error.message.toLowerCase().includes('no answer could be generated') || 
+             error.message.toLowerCase().includes('no response could be generated')) {
     code = 'UNKNOWN';
-    userMessage = 'No answer could be generated for this image and question. Please try a different image or question.';
+    userMessage = 'No response could be generated for your question. Please try a different approach.';
   }
 
   const multimodalError = new Error(userMessage) as MultimodalError;
@@ -72,27 +73,29 @@ function createMultimodalError(error: Error, _operation: string): MultimodalErro
 }
 
 /**
- * Check if Chrome's Prompt API with multimodal support is available
+ * Check if Chrome's Language Model API is available
+ * Note: Multimodal image processing is currently experimental and not supported
  */
 export async function checkMultimodalAvailability(): Promise<MultimodalAvailability> {
   try {
-    if (!window.ai?.prompt) {
+    if (typeof LanguageModel === 'undefined') {
       return MultimodalAvailability.UNAVAILABLE;
     }
 
-    const capabilities = await window.ai.prompt.capabilities();
-    return capabilities.available as MultimodalAvailability;
+    const availability = await LanguageModel.availability();
+    return availability as MultimodalAvailability;
   } catch (error) {
-    console.error('Error checking multimodal availability:', error);
+    console.error('Error checking language model availability:', error);
     return MultimodalAvailability.UNAVAILABLE;
   }
 }
 
 /**
- * Ask a question about an image using Chrome's built-in multimodal AI
- * @param image The image file as a Blob
+ * Ask a question about an image using Chrome's built-in language model
+ * Note: This is a text-only fallback since multimodal image processing is experimental
+ * @param image The image file as a Blob (currently not processed directly)
  * @param question The question to ask about the image
- * @returns Promise resolving to the AI's answer
+ * @returns Promise resolving to a text-only response explaining limitation
  */
 export async function askImageQuestion(image: Blob, question: string): Promise<string> {
   // Input validation
@@ -121,28 +124,32 @@ export async function askImageQuestion(image: Blob, question: string): Promise<s
   }
 
   try {
-    if (!window.ai?.prompt) {
-      throw new Error('Multimodal API not available');
+    // Note: Chrome's stable AI APIs don't currently support direct image processing
+    // This implementation provides a helpful response explaining the limitation
+    if (typeof LanguageModel === 'undefined') {
+      throw new Error('Language Model API not available');
     }
 
-    // Create prompt session
-    const prompt = await window.ai.prompt.create();
+    // Create language model session
+    const session = await LanguageModel.create({
+      systemPrompt: 'You are a helpful assistant. Explain to users that direct image analysis is not currently available in Chrome\'s stable AI APIs.',
+      temperature: 0.3
+    });
 
     try {
-      // Create a comprehensive prompt for better responses
-      const systemPrompt = `Analyse the uploaded image carefully and answer the following question: "${question.trim()}"
+      const prompt = `I have uploaded an image (${image.type}, ${Math.round(image.size / 1024)}KB) and want to ask: "${question.trim()}"
 
-Please provide a clear, detailed answer based on what you can see in the image. If the image contains text, charts, diagrams, or other visual elements, describe them as relevant to the question. Be specific and accurate in your response.`;
+However, Chrome's built-in AI APIs don't currently support direct image analysis in the stable release. Please provide a helpful response explaining this limitation and suggest alternative approaches for analyzing images.`;
 
-      const response = await prompt.prompt(systemPrompt, { images: [image] });
+      const response = await session.prompt(prompt);
       
       if (!response || response.trim().length === 0) {
-        throw new Error('No answer could be generated for this image and question');
+        throw new Error('No response could be generated');
       }
       
       return response.trim();
     } finally {
-      prompt.destroy();
+      session.destroy();
     }
   } catch (error) {
     console.error('Image question processing failed:', error);

@@ -14,19 +14,14 @@ const mockSummarizer = {
   destroy: jest.fn()
 };
 
-const mockAI = {
-  summarizer: {
-    capabilities: jest.fn(),
-    create: jest.fn().mockResolvedValue(mockSummarizer)
-  }
+const mockSummarizerGlobal = {
+  availability: jest.fn(),
+  create: jest.fn().mockResolvedValue(mockSummarizer)
 };
 
 // Setup global mocks
 beforeAll(() => {
-  Object.defineProperty(window, 'ai', {
-    value: mockAI,
-    writable: true
-  });
+  (global as any).Summarizer = mockSummarizerGlobal;
 });
 
 beforeEach(() => {
@@ -35,7 +30,7 @@ beforeEach(() => {
 
 describe('checkSummariserAvailability', () => {
   it('returns readily available when API is ready', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
     
     const result = await checkSummariserAvailability();
     
@@ -43,7 +38,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns after download when model needs downloading', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'after-download' });
+    mockSummarizerGlobal.availability.mockResolvedValue('after-download');
     
     const result = await checkSummariserAvailability();
     
@@ -51,7 +46,7 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not supported', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     const result = await checkSummariserAvailability();
     
@@ -59,20 +54,18 @@ describe('checkSummariserAvailability', () => {
   });
 
   it('returns unavailable when API is not present', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = undefined;
+    delete (global as any).Summarizer;
     
     const result = await checkSummariserAvailability();
     
     expect(result).toBe(SummariserAvailability.UNAVAILABLE);
     
     // Restore for other tests
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).ai = mockAI;
+    (global as any).Summarizer = mockSummarizerGlobal;
   });
 
   it('returns unavailable on error', async () => {
-    mockAI.summarizer.capabilities.mockRejectedValue(new Error('Network error'));
+    mockSummarizerGlobal.availability.mockRejectedValue(new Error('Network error'));
     
     const result = await checkSummariserAvailability();
     
@@ -82,7 +75,7 @@ describe('checkSummariserAvailability', () => {
 
 describe('getTlDr', () => {
   beforeEach(() => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
     mockSummarizer.summarize.mockResolvedValue('This is a test summary');
   });
 
@@ -91,8 +84,9 @@ describe('getTlDr', () => {
     
     const result = await getTlDr(testText);
     
-    expect(result).toBe('This is a test summary');
-    expect(mockAI.summarizer.create).toHaveBeenCalledWith({
+    expect(result.content).toBe('This is a test summary');
+    expect(result.usedHybrid).toBe(false);
+    expect(mockSummarizerGlobal.create).toHaveBeenCalledWith({
       type: 'tl;dr',
       length: 'short',
       format: 'plain-text'
@@ -108,7 +102,7 @@ describe('getTlDr', () => {
     
     const result = await getTlDr('test text');
     
-    expect(result).toBe('Test summary with whitespace');
+    expect(result.content).toBe('Test summary with whitespace');
   });
 
   it('throws error for empty input', async () => {
@@ -117,7 +111,7 @@ describe('getTlDr', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     await expect(getTlDr('test text')).rejects.toThrow();
   });
@@ -163,7 +157,7 @@ describe('getTlDr', () => {
 
 describe('getKeyPoints', () => {
   beforeEach(() => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'readily' });
+    mockSummarizerGlobal.availability.mockResolvedValue('readily');
   });
 
   it('extracts key points successfully', async () => {
@@ -172,12 +166,12 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('Email thread text');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First important point',
       'Second key issue', 
       'Third action item'
     ]);
-    expect(mockAI.summarizer.create).toHaveBeenCalledWith({
+    expect(mockSummarizerGlobal.create).toHaveBeenCalledWith({
       type: 'key-points',
       length: 'short',
       format: 'plain-text'
@@ -190,7 +184,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First point',
       'Second point',
       'Third point'
@@ -203,8 +197,8 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toHaveLength(5);
-    expect(result).toEqual([
+    expect(result.keyPoints).toHaveLength(5);
+    expect(result.keyPoints).toEqual([
       'Point 1', 'Point 2', 'Point 3', 'Point 4', 'Point 5'
     ]);
   });
@@ -215,7 +209,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([
+    expect(result.keyPoints).toEqual([
       'First point',
       'Second point',
       'Third point'
@@ -227,7 +221,7 @@ describe('getKeyPoints', () => {
     
     const result = await getKeyPoints('test');
     
-    expect(result).toEqual([]);
+    expect(result.keyPoints).toEqual([]);
   });
 
   it('throws error for empty input', async () => {
@@ -236,7 +230,7 @@ describe('getKeyPoints', () => {
   });
 
   it('throws error when API unavailable', async () => {
-    mockAI.summarizer.capabilities.mockResolvedValue({ available: 'no' });
+    mockSummarizerGlobal.availability.mockResolvedValue('no');
     
     await expect(getKeyPoints('test text')).rejects.toThrow();
   });
