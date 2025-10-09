@@ -138,63 +138,60 @@ export default function Home() {
   const hasSummary = Boolean(tldr || (keyPoints && keyPoints.length > 0));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="py-8 px-4">
-        <main className="max-w-4xl mx-auto">
-          {/* Header */}
-          <header className="bg-white p-8 rounded-lg shadow-md mb-8">
-            <h1 className="text-4xl font-semibold text-gray-800 mb-4 text-center">
-              Inbox Triage App
-            </h1>
-            <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto text-center">
-              A web-based email triage companion that helps you summarise email
-              threads, understand attachments and generate reply drafts — all
-              running primarily on-device using Chrome&apos;s built-in AI.
-            </p>
-          </header>
+    <div className="p-6">
+      <main className="max-w-6xl mx-auto">
+        {/* Header */}
+        <header className="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h1 className="text-3xl font-semibold text-gray-800 mb-3">
+            Email Thread Analysis
+          </h1>
+          <p className="text-gray-600 leading-relaxed">
+            Paste your email thread below or use the sidebar to extract from Gmail/Outlook.
+            Get instant summaries, key points, and reply drafts using Chrome&apos;s built-in AI.
+          </p>
+        </header>
 
-          {/* Email Thread Input */}
-          <EmailThreadInput 
-            onTextSubmit={handleTextSubmit}
-            isLoading={isLoading || isDownloading}
+        {/* Email Thread Input */}
+        <EmailThreadInput 
+          onTextSubmit={handleTextSubmit}
+          isLoading={isLoading || isDownloading}
+        />
+
+        {/* Privacy Notification */}
+        {hybridNotification.show && (
+          <PrivacyNotification
+            reason={hybridNotification.reason}
+            onDismiss={() => setHybridNotification({ show: false, reason: '' })}
+            className="mb-6"
           />
+        )}
 
-          {/* Privacy Notification */}
-          {hybridNotification.show && (
-            <PrivacyNotification
-              reason={hybridNotification.reason}
-              onDismiss={() => setHybridNotification({ show: false, reason: '' })}
-              className="mb-6"
-            />
-          )}
+        {/* Attachment Section */}
+        <AttachmentSection
+          onAttachmentsChange={handleAttachmentsChange}
+          className="mb-6"
+        />
 
-          {/* Attachment Section */}
-          <AttachmentSection
-            onAttachmentsChange={handleAttachmentsChange}
-            className="mb-8"
-          />
+        {/* Image Q&A Section */}
+        <ImageQA className="mb-6" />
 
-          {/* Image Q&A Section */}
-          <ImageQA className="mb-8" />
+        {/* Thread Summary */}
+        <ThreadSummary
+          tldr={tldr}
+          keyPoints={keyPoints}
+          isLoading={isLoading}
+          error={error}
+          availability={availability}
+          isDownloading={isDownloading}
+        />
 
-          {/* Thread Summary */}
-          <ThreadSummary
-            tldr={tldr}
-            keyPoints={keyPoints}
-            isLoading={isLoading}
-            error={error}
-            availability={availability}
-            isDownloading={isDownloading}
-          />
-
-          {/* Reply Drafts */}
-          <ReplyDrafts
-            threadContent={threadContent}
-            isLoading={isLoading}
-            hasSummary={hasSummary}
-          />
-        </main>
-      </div>
+        {/* Reply Drafts */}
+        <ReplyDrafts
+          threadContent={threadContent}
+          isLoading={isLoading}
+          hasSummary={hasSummary}
+        />
+      </main>
     </div>
   );
 }

@@ -47,6 +47,10 @@ export interface UserPreferences {
   defaultTone: DraftTone;
   defaultLanguage: Language;
   
+  // Translation preferences
+  translationEnabled: boolean;
+  targetLanguage: string; // Language code for translation (e.g., 'es', 'fr', 'none')
+  
   // Default content
   defaultGuidance: string;
   signature: string;
@@ -126,6 +130,8 @@ export const DEFAULT_PREFERENCES: UserPreferences = {
   processingMode: 'on-device',
   defaultTone: 'neutral',
   defaultLanguage: 'en-GB',
+  translationEnabled: false,
+  targetLanguage: 'none',
   defaultGuidance: '',
   signature: '',
   customModelSettings: DEFAULT_CUSTOM_MODEL_SETTINGS,
