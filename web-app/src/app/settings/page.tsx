@@ -4,6 +4,7 @@ import { useState } from 'react';
 import WebhookSettings from '../../components/WebhookSettings';
 import CustomInstructionsManager from '../../components/CustomInstructionsManager';
 import CustomModelKeyManager from '../../components/CustomModelKeyManager';
+import TranslationSelector from '../../components/TranslationSelector';
 import { usePreferences } from '../../lib/preferences/context';
 import { getPreferencesSummary } from '../../lib/preferences/utils';
 
@@ -227,6 +228,41 @@ export default function SettingsPage() {
               <span className="text-xs text-gray-400">
                 {currentPrefs.signature.length}/200
               </span>
+            </div>
+          </div>
+
+          {/* Translation Settings */}
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-medium text-gray-800 mb-4">Translation Settings</h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700">Enable Translation</h3>
+                  <p className="text-sm text-gray-500">
+                    Automatically translate summaries and drafts to your preferred language
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={currentPrefs.translationEnabled}
+                    onChange={(e) => preferences.updatePreferences({ translationEnabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+              
+              {currentPrefs.translationEnabled && (
+                <TranslationSelector
+                  selectedLanguage={currentPrefs.targetLanguage}
+                  onLanguageChange={(language) => preferences.updatePreferences({ targetLanguage: language })}
+                />
+              )}
+            </div>
+            <div className="mt-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-800">
+              <strong>Privacy Notice:</strong> All translations happen on-device using Chrome's built-in Translator API. 
+              No content is sent to external servers for translation.
             </div>
           </div>
 

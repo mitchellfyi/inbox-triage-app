@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
+import Sidebar from "@/components/Sidebar";
 import { PreferencesProvider } from "@/lib/preferences/context";
 
 export const metadata: Metadata = {
@@ -17,8 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <PreferencesProvider>
-          <Navigation />
-          {children}
+          <Sidebar>
+            {children}
+          </Sidebar>
         </PreferencesProvider>
       </body>
     </html>
